@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  recettes-app:
+    container_name: recettes-app
+    build:
+      context: https://github.com/<TON_UTILISATEUR_GH>/recettes-app.git#main
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/data/recettes.sqlite
+      - PORT=3000
+    ports:
+      - "3007:3000"  # change 3007 si déjà pris
+    volumes:
+      - recettes_data:/data
+      - recettes_cache:/app/.next
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  recettes_data:
+  recettes_cache:

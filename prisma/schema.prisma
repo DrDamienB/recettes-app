@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Unit {
+  code             String             @id // "g" | "kg" | "mL" | "L" | "piece" | "cac" | "cas"
+  type             String // "mass" | "volume" | "count"
+  ratioToBase      Float // ex: kg=1000 (vers g) ; L=1000 (vers mL) ; cac=5 ; cas=15
+  RecipeIngredient RecipeIngredient[]
+}
+
+model Ingredient {
+  id               Int                @id @default(autoincrement())
+  nameNormalized   String             @unique
+  canonicalUnit    String
+  storeSection     String // primeur, crèmerie, etc.
+  synonyms         Json // ex: ["zucchini","courgette verte"] (JSON au lieu de String[])
+  RecipeIngredient RecipeIngredient[]
+}
+
+model Recipe {
+  id              Int     @id @default(autoincrement())
+  title           String
+  slug            String  @unique
+  description     String?
+  imagePath       String?
+  prepMin         Int?
+  cookMin         Int?
+  servingsDefault Int     @default(2)
+  tags            Json // ex: ["dessert","vendredi"] (JSON au lieu de String[])
+
+  steps       RecipeStep[]
+  ingredients RecipeIngredient[]
+
+  // relations opposées (retours) pour lever les erreurs
+  mealPlanItems   MealPlanItem[]   @relation("RecipeMealPlanItems")
+  recurrenceRules RecurrenceRule[] @relation("RecipeRecurrenceRules")
+}
+
+model RecipeStep {
+  id       Int    @id @default(autoincrement())
+  recipeId Int
+  order    Int
+  text     String
+  Recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model RecipeIngredient {
+  id           Int     @id @default(autoincrement())
+  recipeId     Int
+  ingredientId Int
+  qtyPerPerson Float // ex: 50 (g/personne)
+  unitCode     String // doit correspondre à Unit.code
+  note         String?
+
+  Recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  Ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  Unit       Unit       @relation(fields: [unitCode], references: [code], onDelete: Restrict)
+}
+
+model MealPlan {
+  id          Int            @id @default(autoincrement())
+  date        DateTime // jour (UTC)
+  slot        String // "midi" | "soir"
+  peopleCount Int
+  items       MealPlanItem[]
+}
+
+model MealPlanItem {
+  id         Int @id @default(autoincrement())
+  mealPlanId Int
+  recipeId   Int
+
+  MealPlan MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  Recipe   Recipe   @relation("RecipeMealPlanItems", fields: [recipeId], references: [id], onDelete: Restrict)
+}
+
+model RecurrenceRule {
+  id        Int       @id @default(autoincrement())
+  recipeId  Int
+  slot      String // "midi" | "soir"
+  rruleText String // ex: FREQ=WEEKLY;BYDAY=FR
+  startDate DateTime
+  endDate   DateTime?
+
+  Recipe Recipe @relation("RecipeRecurrenceRules", fields: [recipeId], references: [id], onDelete: Cascade)
+}
