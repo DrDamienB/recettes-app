@@ -3,7 +3,7 @@ services:
   recettes-app:
     container_name: recettes-app
     build:
-      context: https://github.com/<TON_UTILISATEUR_GH>/recettes-app.git#main
+      context: https://github.com/DrDamienB/recettes-app.git#main
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
