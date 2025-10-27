@@ -1,23 +1,27 @@
 // prisma/seed.ts
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  // === UNITÉS ===
-  // NB: on ENLÈVE skipDuplicates (problème de typage avec Prisma 6)
-  await prisma.unit.createMany({
-    data: [
-      { code: "g", type: "mass", ratioToBase: 1 },
-      { code: "kg", type: "mass", ratioToBase: 1000 },
-      { code: "mL", type: "volume", ratioToBase: 1 },
-      { code: "L", type: "volume", ratioToBase: 1000 },
-      { code: "piece", type: "count", ratioToBase: 1 },
-      { code: "cac", type: "volume", ratioToBase: 5 },   // cuillère à café
-      { code: "cas", type: "volume", ratioToBase: 15 },  // cuillère à soupe
-    ],
-  });
+  // UNITÉS
+  const units = [
+    { code: "g", type: "mass", ratioToBase: 1 },
+    { code: "kg", type: "mass", ratioToBase: 1000 },
+    { code: "mL", type: "volume", ratioToBase: 1 },
+    { code: "L", type: "volume", ratioToBase: 1000 },
+    { code: "piece", type: "count", ratioToBase: 1 },
+    { code: "cac", type: "volume", ratioToBase: 5 },
+    { code: "cas", type: "volume", ratioToBase: 15 },
+  ];
+  for (const u of units) {
+    await prisma.unit.upsert({
+      where: { code: u.code },
+      update: { ...u },
+      create: { ...u },
+    });
+  }
 
-  // === INGRÉDIENTS de base ===
+  // INGRÉDIENTS
   const farine = await prisma.ingredient.upsert({
     where: { nameNormalized: "farine" },
     update: {},
@@ -25,7 +29,7 @@ async function main() {
       nameNormalized: "farine",
       canonicalUnit: "g",
       storeSection: "sucré",
-      synonyms: [] as Prisma.JsonArray,
+      synonyms: [] as any,
     },
   });
 
@@ -36,7 +40,7 @@ async function main() {
       nameNormalized: "lait",
       canonicalUnit: "mL",
       storeSection: "crèmerie",
-      synonyms: [] as Prisma.JsonArray,
+      synonyms: [] as any,
     },
   });
 
@@ -47,7 +51,7 @@ async function main() {
       nameNormalized: "oeuf",
       canonicalUnit: "piece",
       storeSection: "crèmerie",
-      synonyms: ["œuf"] as unknown as Prisma.JsonArray,
+      synonyms: ["œuf"] as any,
     },
   });
 
@@ -58,11 +62,11 @@ async function main() {
       nameNormalized: "beurre",
       canonicalUnit: "g",
       storeSection: "crèmerie",
-      synonyms: [] as Prisma.JsonArray,
+      synonyms: [] as any,
     },
   });
 
-  // === RECETTE démo : Crêpes sucrées ===
+  // RECETTE
   const crepes = await prisma.recipe.upsert({
     where: { slug: "crepes-sucrees" },
     update: {},
@@ -71,7 +75,7 @@ async function main() {
       slug: "crepes-sucrees",
       description: "Crêpes classiques, parfaites pour le vendredi soir",
       servingsDefault: 4,
-      tags: ["dessert", "vendredi"] as unknown as Prisma.JsonArray,
+      tags: ["dessert", "vendredi"] as any,
       steps: {
         create: [
           { order: 1, text: "Mélanger farine, œufs, lait, beurre fondu." },
@@ -89,7 +93,7 @@ async function main() {
     },
   });
 
-  // === RÉCURRENCE démo ===
+  // RÉCURRENCE
   await prisma.recurrenceRule.create({
     data: {
       recipeId: crepes.id,
