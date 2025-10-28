@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { normalizeName } from "@/lib/normalize";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 type IngredientInput = {
   name: string;          // affiché par l'utilisateur (ex: "Œuf")
@@ -91,5 +92,5 @@ export async function createRecipe(formData: FormData) {
 
   // Revalider la liste /recipes
   revalidatePath("/recipes");
-  return { id: recipe.id, slug: recipe.slug };
+  redirect("/recipes");
 }
