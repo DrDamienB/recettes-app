@@ -15,12 +15,14 @@ model Unit {
 }
 
 model Ingredient {
-  id               Int                @id @default(autoincrement())
-  nameNormalized   String             @unique
-  canonicalUnit    String
-  storeSection     String // primeur, crèmerie, etc.
-  synonyms         Json // ex: ["zucchini","courgette verte"] (JSON au lieu de String[])
-  RecipeIngredient RecipeIngredient[]
+  id                 Int                  @id @default(autoincrement())
+  nameNormalized     String               @unique
+  canonicalUnit      String
+  storeSection       String // primeur, crèmerie, etc.
+  storeName          String? // nom du magasin (primeur "Chez Marcel", boulangerie "Paul", etc.)
+  synonyms           Json // ex: ["zucchini","courgette verte"] (JSON au lieu de String[])
+  RecipeIngredient   RecipeIngredient[]
+  ShoppingListItem   ShoppingListItem[]
 }
 
 model Recipe {
@@ -64,11 +66,12 @@ model RecipeIngredient {
 }
 
 model MealPlan {
-  id          Int            @id @default(autoincrement())
-  date        DateTime // jour (UTC)
-  slot        String // "midi" | "soir"
-  peopleCount Int
-  items       MealPlanItem[]
+  id               Int                @id @default(autoincrement())
+  date             DateTime // jour (UTC)
+  slot             String // "midi" | "soir"
+  peopleCount      Int
+  items            MealPlanItem[]
+  ShoppingListItem ShoppingListItem[]
 }
 
 model MealPlanItem {
@@ -89,4 +92,32 @@ model RecurrenceRule {
   endDate   DateTime?
 
   Recipe Recipe @relation("RecipeRecurrenceRules", fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+// Liste de courses générée pour une période
+model ShoppingList {
+  id        Int                @id @default(autoincrement())
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime           @default(now())
+  items     ShoppingListItem[]
+}
+
+// Un item de la liste de courses lié à un repas planifié spécifique
+model ShoppingListItem {
+  id             Int      @id @default(autoincrement())
+  shoppingListId Int
+  mealPlanId     Int // Le repas planifié d'où vient cet ingrédient
+  ingredientId   Int
+  quantity       Float
+  unitCode       String
+  purchased      Boolean  @default(false)
+  purchasedAt    DateTime?
+
+  ShoppingList ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  MealPlan     MealPlan     @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  Ingredient   Ingredient   @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@index([shoppingListId])
+  @@index([mealPlanId])
 }

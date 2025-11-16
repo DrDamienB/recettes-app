@@ -40,7 +40,8 @@ export type RecipeFormState = {
   error?: string;
 };
 
-export async function createRecipe(
+export async function updateRecipe(
+  recipeId: number,
   prevState: RecipeFormState | null,
   formData: FormData
 ): Promise<RecipeFormState> {
@@ -133,7 +134,7 @@ export async function createRecipe(
       });
     }
 
-    // 2) Création de la recette + étapes
+    // 2) Mise à jour de la recette + étapes
     const slug = normalizeName(validated.title).replace(/\s+/g, "-");
     const tags = validated.tags ? validated.tags.split(",").map(t => normalizeName(t)) : [];
 
@@ -141,7 +142,18 @@ export async function createRecipe(
       ? validated.steps.split("\n").map(s => s.trim()).filter(Boolean)
       : [];
 
-    await prisma.recipe.create({
+    // Supprimer les anciens ingrédients et étapes
+    await prisma.recipeIngredient.deleteMany({
+      where: { recipeId },
+    });
+
+    await prisma.recipeStep.deleteMany({
+      where: { recipeId },
+    });
+
+    // Mettre à jour la recette
+    await prisma.recipe.update({
+      where: { id: recipeId },
       data: {
         title: validated.title,
         slug,
@@ -159,15 +171,16 @@ export async function createRecipe(
       },
     });
 
-    // Revalider la liste /recipes
+    // Revalider les pages
     revalidatePath("/recipes");
+    revalidatePath(`/recipes/${recipeId}`);
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Une erreur est survenue lors de la création de la recette"
+      error: error instanceof Error ? error.message : "Une erreur est survenue lors de la mise à jour de la recette"
     };
   }
 
   // Redirection après succès
-  redirect("/recipes");
+  redirect(`/recipes/${recipeId}`);
 }

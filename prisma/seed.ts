@@ -29,6 +29,7 @@ async function main() {
       nameNormalized: "farine",
       canonicalUnit: "g",
       storeSection: "sucré",
+      storeName: "Supermarché",
       synonyms: [] as any,
     },
   });
@@ -40,6 +41,7 @@ async function main() {
       nameNormalized: "lait",
       canonicalUnit: "mL",
       storeSection: "crèmerie",
+      storeName: "Supermarché",
       synonyms: [] as any,
     },
   });
@@ -51,6 +53,7 @@ async function main() {
       nameNormalized: "oeuf",
       canonicalUnit: "piece",
       storeSection: "crèmerie",
+      storeName: "Supermarché",
       synonyms: ["œuf"] as any,
     },
   });
@@ -62,6 +65,7 @@ async function main() {
       nameNormalized: "beurre",
       canonicalUnit: "g",
       storeSection: "crèmerie",
+      storeName: "Supermarché",
       synonyms: [] as any,
     },
   });

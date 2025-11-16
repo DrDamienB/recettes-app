@@ -6,15 +6,34 @@ type Row = {
   qtyPerPerson: string;
   unitCode: "g" | "kg" | "mL" | "L" | "piece" | "cac" | "cas";
   storeSection: string;
+  storeName: string;
 };
 
-export default function IngredientRows() {
-  const [rows, setRows] = useState<Row[]>([
-    { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée" },
-  ]);
+type IngredientRowsProps = {
+  defaultIngredients?: Array<{
+    name: string;
+    qtyPerPerson: number;
+    unitCode: string;
+    storeSection?: string;
+    storeName?: string;
+  }>;
+};
+
+export default function IngredientRows({ defaultIngredients }: IngredientRowsProps = {}) {
+  const initialRows: Row[] = defaultIngredients && defaultIngredients.length > 0
+    ? defaultIngredients.map(ing => ({
+        name: ing.name,
+        qtyPerPerson: String(ing.qtyPerPerson),
+        unitCode: ing.unitCode as Row["unitCode"],
+        storeSection: ing.storeSection || "épicerie salée",
+        storeName: ing.storeName || "Supermarché",
+      }))
+    : [{ name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Supermarché" }];
+
+  const [rows, setRows] = useState<Row[]>(initialRows);
 
   function addRow() {
-    setRows(r => [...r, { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée" }]);
+    setRows(r => [...r, { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Supermarché" }]);
   }
   function removeRow(i: number) {
     setRows(r => r.filter((_, idx) => idx !== i));
@@ -27,7 +46,7 @@ export default function IngredientRows() {
     });
   }
 
-  // on encode en JSON pour l’action serveur
+  // on encode en JSON pour l'action serveur
   const payload = JSON.stringify(
     rows
       .filter(r => r.name.trim())
@@ -36,6 +55,7 @@ export default function IngredientRows() {
         qtyPerPerson: Number(r.qtyPerPerson || 0),
         unitCode: r.unitCode,
         storeSection: r.storeSection,
+        storeName: r.storeName,
       }))
   );
 
@@ -43,54 +63,65 @@ export default function IngredientRows() {
     <div className="space-y-3">
       <input type="hidden" name="ingredients" value={payload} />
       {rows.map((r, i) => (
-        <div key={i} className="grid grid-cols-12 gap-2 items-end">
-          <div className="col-span-5">
-            <label className="block text-sm">Ingrédient</label>
-            <input className="border rounded p-2 w-full"
-              value={r.name}
-              onChange={e => updateRow(i, "name", e.target.value)} />
+        <div key={i} className="space-y-2 border-b pb-4">
+          <div className="grid grid-cols-12 gap-2 items-end">
+            <div className="col-span-6">
+              <label className="block text-sm">Ingrédient</label>
+              <input className="border rounded p-2 w-full"
+                value={r.name}
+                onChange={e => updateRow(i, "name", e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm">Qté / pers.</label>
+              <input className="border rounded p-2 w-full" type="number" step="0.01"
+                value={r.qtyPerPerson}
+                onChange={e => updateRow(i, "qtyPerPerson", e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm">Unité</label>
+              <select className="border rounded p-2 w-full"
+                value={r.unitCode}
+                onChange={e => updateRow(i, "unitCode", e.target.value)}>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="mL">mL</option>
+                <option value="L">L</option>
+                <option value="piece">pièce</option>
+                <option value="cac">c.à.c</option>
+                <option value="cas">c.à.s</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <button type="button" onClick={() => removeRow(i)} className="text-sm underline opacity-70 text-red-600">
+                Supprimer
+              </button>
+            </div>
           </div>
-          <div className="col-span-3">
-            <label className="block text-sm">Qté / personne</label>
-            <input className="border rounded p-2 w-full" type="number" step="0.01"
-              value={r.qtyPerPerson}
-              onChange={e => updateRow(i, "qtyPerPerson", e.target.value)} />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm">Unité</label>
-            <select className="border rounded p-2 w-full"
-              value={r.unitCode}
-              onChange={e => updateRow(i, "unitCode", e.target.value)}>
-              <option value="g">g</option>
-              <option value="kg">kg</option>
-              <option value="mL">mL</option>
-              <option value="L">L</option>
-              <option value="piece">pièce</option>
-              <option value="cac">c.à.c</option>
-              <option value="cas">c.à.s</option>
-            </select>
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm">Rayon</label>
-            <select className="border rounded p-2 w-full"
-              value={r.storeSection}
-              onChange={e => updateRow(i, "storeSection", e.target.value)}>
-              <option>primeur</option>
-              <option>crèmerie</option>
-              <option>boulangerie</option>
-              <option>boucherie/poissonnerie</option>
-              <option>conserves/épicerie salée</option>
-              <option>sucré</option>
-              <option>surgelés</option>
-              <option>boissons</option>
-              <option>entretien</option>
-              <option>épicerie salée</option>
-            </select>
-          </div>
-          <div className="col-span-12">
-            <button type="button" onClick={() => removeRow(i)} className="text-sm underline opacity-70">
-              Supprimer
-            </button>
+          <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-6">
+              <label className="block text-sm">Magasin</label>
+              <input className="border rounded p-2 w-full"
+                value={r.storeName}
+                onChange={e => updateRow(i, "storeName", e.target.value)}
+                placeholder="Ex: Primeur Chez Marcel" />
+            </div>
+            <div className="col-span-6">
+              <label className="block text-sm">Rayon</label>
+              <select className="border rounded p-2 w-full"
+                value={r.storeSection}
+                onChange={e => updateRow(i, "storeSection", e.target.value)}>
+                <option>primeur</option>
+                <option>crèmerie</option>
+                <option>boulangerie</option>
+                <option>boucherie/poissonnerie</option>
+                <option>conserves/épicerie salée</option>
+                <option>sucré</option>
+                <option>surgelés</option>
+                <option>boissons</option>
+                <option>entretien</option>
+                <option>épicerie salée</option>
+              </select>
+            </div>
           </div>
         </div>
       ))}
