@@ -48,7 +48,7 @@ export default function NewRecipePage() {
           placeholder="Ex: Pâtes carbonara"
           required
           fullWidth
-          className="h-12"
+          className="h-11"
         />
 
         <div className="space-y-2">
@@ -57,7 +57,7 @@ export default function NewRecipePage() {
           </label>
           <textarea
             name="description"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[96px]"
+            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[96px]"
             rows={2}
             placeholder="Décrivez votre recette..."
           />
@@ -70,7 +70,7 @@ export default function NewRecipePage() {
             label="Préparation (min)"
             placeholder="15"
             hint="Temps de préparation"
-            className="h-12"
+            className="h-11"
           />
           <Input
             name="cookMin"
@@ -78,7 +78,7 @@ export default function NewRecipePage() {
             label="Cuisson (min)"
             placeholder="10"
             hint="Temps de cuisson"
-            className="h-12"
+            className="h-11"
           />
           <Input
             name="servingsDefault"
@@ -87,7 +87,7 @@ export default function NewRecipePage() {
             defaultValue="2"
             required
             hint="Nombre de personnes"
-            className="h-12"
+            className="h-11"
           />
         </div>
 
@@ -97,27 +97,8 @@ export default function NewRecipePage() {
           placeholder="pates, rapide, italien"
           hint="Séparés par des virgules"
           fullWidth
-          className="h-12"
+          className="h-11"
         />
-
-        <div className="space-y-2">
-          <label htmlFor="storeName" className="block text-sm font-medium text-gray-700">
-            Magasin préféré
-          </label>
-          <select
-            id="storeName"
-            name="storeName"
-            defaultValue="Auchan"
-            className="w-full h-12 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="Fresh">Fresh</option>
-            <option value="Asiatique">Asiatique</option>
-            <option value="Primeur">Primeur</option>
-            <option value="Auchan">Auchan</option>
-            <option value="Carrefour">Carrefour</option>
-            <option value="Leclerc">Leclerc</option>
-          </select>
-        </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
@@ -132,7 +113,7 @@ export default function NewRecipePage() {
           </label>
           <textarea
             name="steps"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[144px]"
+            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[144px]"
             rows={5}
             placeholder={"1) Faire bouillir l'eau\n2) Cuire les pâtes 9 min\n3) Mélanger et servir"}
           />

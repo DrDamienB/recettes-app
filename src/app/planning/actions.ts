@@ -76,7 +76,7 @@ export async function assignRecipeToSlot(
 
     if (mealPlan) {
       // Mettre à jour le nombre de personnes
-      mealPlan = await prisma.mealPlan.update({
+      await prisma.mealPlan.update({
         where: { id: mealPlan.id },
         data: { peopleCount },
       });

@@ -15,10 +15,11 @@ type RecipeCard = {
   description: string | null;
   servingsDefault: number | null;
   tags: unknown;
+  imagePath: string | null;
 };
 
 type RecipesPageProps = {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; tag?: string }>;
 };
 
 const RECIPES_PER_PAGE = 20;
@@ -26,6 +27,7 @@ const RECIPES_PER_PAGE = 20;
 export default async function RecipesPage({ searchParams }: RecipesPageProps) {
   const params = await searchParams;
   const query = params.q || "";
+  const selectedTag = params.tag || "";
   const currentPage = parseInt(params.page || "1", 10);
 
   // Récupérer toutes les recettes
@@ -36,19 +38,34 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
       description: true,
       servingsDefault: true,
       tags: true,
+      imagePath: true,
     },
     orderBy: { id: "desc" },
   });
 
   // Filtrer côté serveur (insensible à la casse)
-  const filteredRecipes = query
-    ? allRecipes.filter((recipe) => {
-        const searchLower = query.toLowerCase();
-        const titleMatch = recipe.title.toLowerCase().includes(searchLower);
-        const descMatch = recipe.description?.toLowerCase().includes(searchLower);
-        return titleMatch || descMatch;
-      })
-    : allRecipes;
+  const filteredRecipes = allRecipes.filter((recipe) => {
+    // Filtre par recherche textuelle
+    if (query) {
+      const searchLower = query.toLowerCase();
+      const titleMatch = recipe.title.toLowerCase().includes(searchLower);
+      const descMatch = recipe.description?.toLowerCase().includes(searchLower);
+      if (!titleMatch && !descMatch) return false;
+    }
+
+    // Filtre par tag
+    if (selectedTag) {
+      const tags = Array.isArray(recipe.tags)
+        ? recipe.tags
+        : typeof recipe.tags === "string"
+        ? recipe.tags.split(",").map((t) => t.trim())
+        : [];
+      const hasTag = tags.some((tag: string) => tag.toLowerCase() === selectedTag.toLowerCase());
+      if (!hasTag) return false;
+    }
+
+    return true;
+  });
 
   const totalRecipes = allRecipes.length;
   const totalFiltered = filteredRecipes.length;
@@ -61,10 +78,26 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
   const endIndex = startIndex + RECIPES_PER_PAGE;
   const recipes = filteredRecipes.slice(startIndex, endIndex);
 
-  // URLs de pagination
-  const buildPageUrl = (page: number) => {
+  // Extraire tous les tags uniques
+  const allTags = Array.from(
+    new Set(
+      allRecipes.flatMap((recipe) => {
+        const tags = Array.isArray(recipe.tags)
+          ? recipe.tags
+          : typeof recipe.tags === "string"
+          ? recipe.tags.split(",").map((t) => t.trim())
+          : [];
+        return tags;
+      })
+    )
+  ).sort();
+
+  // URLs de pagination et filtres
+  const buildPageUrl = (page: number, tag?: string) => {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
+    if (tag) params.set("tag", tag);
+    else if (selectedTag) params.set("tag", selectedTag);
     if (page > 1) params.set("page", page.toString());
     const queryString = params.toString();
     return `/recipes${queryString ? `?${queryString}` : ""}`;
@@ -99,9 +132,41 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
       </div>
 
       {/* Barre de recherche */}
-      <div className="mb-6">
+      <div className="mb-4">
         <SearchBar initialQuery={query} />
       </div>
+
+      {/* Filtres par tags */}
+      {allTags.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-gray-700">Tags :</span>
+            <a
+              href={buildPageUrl(1, "")}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                !selectedTag
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Tous
+            </a>
+            {allTags.map((tag: string) => (
+              <a
+                key={tag}
+                href={buildPageUrl(1, tag)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedTag === tag
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {tag}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {totalRecipes === 0 ? (
         <Card>
@@ -144,48 +209,52 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
                 : [];
 
               return (
-                <Card key={recipe.id} hover>
-                  <CardHeader>
-                    <CardTitle as="h3">{recipe.title}</CardTitle>
-                    {recipe.description && (
-                      <CardDescription>{recipe.description}</CardDescription>
-                    )}
-                  </CardHeader>
-
-                  <CardContent>
-                    {recipe.servingsDefault && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                        <span>👥 {recipe.servingsDefault} personnes</span>
+                <a key={recipe.id} href={`/recipes/${recipe.id}`} className="block">
+                  <Card hover className="h-full transition-transform hover:scale-[1.02]">
+                    {recipe.imagePath && (
+                      <div className="w-full h-48 overflow-hidden rounded-t-lg">
+                        <img
+                          src={recipe.imagePath}
+                          alt={recipe.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
 
-                    {tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {tags.slice(0, 3).map((tag: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {tags.length > 3 && (
-                          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                            +{tags.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
+                    <CardHeader>
+                      <CardTitle as="h3">{recipe.title}</CardTitle>
+                      {recipe.description && (
+                        <CardDescription>{recipe.description}</CardDescription>
+                      )}
+                    </CardHeader>
 
-                  <CardFooter className="gap-2">
-                    <a href={`/recipes/${recipe.id}`} className="w-full">
-                      <Button size="sm" fullWidth>
-                        Voir la recette
-                      </Button>
-                    </a>
-                  </CardFooter>
-                </Card>
+                    <CardContent>
+                      {recipe.servingsDefault && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                          <span>👥 {recipe.servingsDefault} personnes</span>
+                        </div>
+                      )}
+
+                      {tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {tags.slice(0, 3).map((tag: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {tags.length > 3 && (
+                            <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                              +{tags.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </a>
               );
             })}
           </div>

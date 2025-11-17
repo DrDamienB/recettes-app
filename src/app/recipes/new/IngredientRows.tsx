@@ -26,14 +26,14 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
         qtyPerPerson: String(ing.qtyPerPerson),
         unitCode: ing.unitCode as Row["unitCode"],
         storeSection: ing.storeSection || "épicerie salée",
-        storeName: ing.storeName || "Supermarché",
+        storeName: ing.storeName || "Auchan",
       }))
-    : [{ name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Supermarché" }];
+    : [{ name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Auchan" }];
 
   const [rows, setRows] = useState<Row[]>(initialRows);
 
   function addRow() {
-    setRows(r => [...r, { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Supermarché" }]);
+    setRows(r => [...r, { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Auchan" }]);
   }
   function removeRow(i: number) {
     setRows(r => r.filter((_, idx) => idx !== i));
@@ -67,19 +67,19 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
           <div className="grid grid-cols-12 gap-2 items-end">
             <div className="col-span-6">
               <label className="block text-sm">Ingrédient</label>
-              <input className="border rounded p-2 w-full"
+              <input className="border rounded h-11 p-2.5 w-full"
                 value={r.name}
                 onChange={e => updateRow(i, "name", e.target.value)} />
             </div>
             <div className="col-span-2">
               <label className="block text-sm">Qté / pers.</label>
-              <input className="border rounded p-2 w-full" type="number" step="0.01"
+              <input className="border rounded h-11 p-2.5 w-full" type="number" step="0.01"
                 value={r.qtyPerPerson}
                 onChange={e => updateRow(i, "qtyPerPerson", e.target.value)} />
             </div>
             <div className="col-span-2">
               <label className="block text-sm">Unité</label>
-              <select className="border rounded p-2 w-full"
+              <select className="border rounded h-11 p-2.5 w-full"
                 value={r.unitCode}
                 onChange={e => updateRow(i, "unitCode", e.target.value)}>
                 <option value="g">g</option>
@@ -100,14 +100,20 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
           <div className="grid grid-cols-12 gap-2">
             <div className="col-span-6">
               <label className="block text-sm">Magasin</label>
-              <input className="border rounded p-2 w-full"
+              <select className="border rounded h-11 p-2.5 w-full"
                 value={r.storeName}
-                onChange={e => updateRow(i, "storeName", e.target.value)}
-                placeholder="Ex: Primeur Chez Marcel" />
+                onChange={e => updateRow(i, "storeName", e.target.value)}>
+                <option value="Fresh">Fresh</option>
+                <option value="Asiatique">Asiatique</option>
+                <option value="Primeur">Primeur</option>
+                <option value="Auchan">Auchan</option>
+                <option value="Carrefour">Carrefour</option>
+                <option value="Leclerc">Leclerc</option>
+              </select>
             </div>
             <div className="col-span-6">
               <label className="block text-sm">Rayon</label>
-              <select className="border rounded p-2 w-full"
+              <select className="border rounded h-11 p-2.5 w-full"
                 value={r.storeSection}
                 onChange={e => updateRow(i, "storeSection", e.target.value)}>
                 <option>primeur</option>
