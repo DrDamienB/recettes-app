@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   recettes-app:
@@ -10,47 +10,12 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=file:/data/recettes.sqlite
       - PORT=3000
-      # Désactive la télémétrie Next.js
       - NEXT_TELEMETRY_DISABLED=1
     ports:
-      - "3007:3000"  # Port externe:interne (changez 3007 si déjà utilisé)
+      - "3007:3000"
     volumes:
       - recettes_data:/data
-
-    # Limites de ressources (compatible Portainer / Docker Compose)
-    mem_limit: 512m           # Max 512 MB RAM
-    mem_reservation: 256m     # Minimum garanti
-    cpus: 0.5                 # Max 0.5 CPU (ajustez selon votre NAS)
-
-    # Sécurité
-    read_only: false  # SQLite nécessite l'écriture
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETUID
-      - SETGID
-
-    # Redémarrage automatique
     restart: unless-stopped
-
-    # Health check amélioré
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-    # Logs (rotation automatique pour économiser l'espace)
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
 volumes:
   recettes_data:
-    driver: local
