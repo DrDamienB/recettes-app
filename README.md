@@ -44,6 +44,7 @@ docker-compose up -d
 
 ## 📚 Documentation
 
+- **[GUIDE-DEBUTANT.md](GUIDE-DEBUTANT.md)** - 🎓 Guide pas à pas pour débutants (installation Portainer + déploiement)
 - **[README-DEPLOY.md](README-DEPLOY.md)** - Guide de déploiement sur NAS Synology
 - **[UPDATES.md](UPDATES.md)** - Guide de mise à jour et maintenance
 - **[.env.example](.env.example)** - Variables d'environnement disponibles
