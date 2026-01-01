@@ -31,26 +31,39 @@ jobs:
 
       - name: Test Docker image
         run: |
+          # Démarrer le conteneur
           docker run -d --name recettes-test \
             -e NODE_ENV=production \
             -e DATABASE_URL=file:/data/recettes.sqlite \
             recettes-app:test
 
-          # Attendre que le conteneur démarre
-          sleep 10
+          # Attendre un peu
+          sleep 15
 
-          # Vérifier que le conteneur est en cours d'exécution
-          docker ps | grep recettes-test
+          # Afficher les logs immédiatement
+          echo "=== Container logs ==="
+          docker logs recettes-test || true
 
-          # Vérifier le health check
-          docker inspect --format='{{.State.Health.Status}}' recettes-test || echo "Health check not ready yet"
+          # Vérifier l'état du conteneur
+          echo "=== Container status ==="
+          docker ps -a | grep recettes-test || true
 
-          # Afficher les logs
-          docker logs recettes-test
+          # Vérifier si le conteneur tourne encore
+          if docker ps | grep -q recettes-test; then
+            echo "✓ Container is running"
+
+            # Tester l'endpoint health
+            echo "=== Testing health endpoint ==="
+            docker exec recettes-test wget -qO- http://localhost:3000/api/health || echo "Health endpoint not ready"
+          else
+            echo "✗ Container stopped unexpectedly"
+            docker logs recettes-test
+            exit 1
+          fi
 
           # Nettoyer
-          docker stop recettes-test
-          docker rm recettes-test
+          docker stop recettes-test || true
+          docker rm recettes-test || true
 
       - name: Check image size
         run: |

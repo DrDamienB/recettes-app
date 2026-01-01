@@ -55,9 +55,17 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 RUN npm install -g prisma@6.18.0 && \
     npm cache clean --force
 
+# Create data directory and set permissions
+RUN mkdir -p /data && \
+    chown -R nextjs:nodejs /data
+
+# Copy and setup entrypoint script
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh && \
+    chown nextjs:nodejs docker-entrypoint.sh
+
 # Volume pour SQLite
 VOLUME ["/data"]
-RUN chown -R nextjs:nodejs /data || true
 
 ENV DATABASE_URL="file:/data/recettes.sqlite"
 
@@ -71,4 +79,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start application
-CMD sh -c "prisma migrate deploy && node server.js"
+ENTRYPOINT ["./docker-entrypoint.sh"]
