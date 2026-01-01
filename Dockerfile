@@ -1,39 +1,74 @@
-# Build
-FROM node:20-alpine AS build
+# ============================================
+# Stage 1: Dependencies
+# ============================================
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# 1) deps
+# Install dependencies only when needed
+COPY package*.json ./
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# ============================================
+# Stage 2: Builder
+# ============================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy dependencies
 COPY package*.json ./
 RUN npm ci
 
-# 2) prisma client (doit être généré AVANT le build Next)
+# Generate Prisma Client
 COPY prisma ./prisma
-# URL factice suffisante pour la génération du client
 ENV DATABASE_URL="file:./dev.sqlite"
 RUN npx prisma generate
 
-# 3) reste du code + build
+# Build Next.js application
 COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Runtime
-FROM node:20-alpine AS runtime
+# ============================================
+# Stage 3: Production Runner (optimisé)
+# ============================================
+FROM node:20-alpine AS runner
 WORKDIR /app
+
+# Add security: Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Set production environment
 ENV NODE_ENV=production
-
-# copie build & deps
-COPY --from=build /app/.next ./.next
-COPY --from=build /app/public ./public
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package*.json ./
-COPY --from=build /app/prisma ./prisma
-
-# volume pour SQLite (prod)
-VOLUME ["/data"]
-ENV DATABASE_URL="file:/data/recettes.sqlite"
+ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
+
+# Copy only necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Install only Prisma CLI (minimal)
+RUN npm install -g prisma@6.18.0 && \
+    npm cache clean --force
+
+# Volume pour SQLite
+VOLUME ["/data"]
+RUN chown -R nextjs:nodejs /data || true
+
+ENV DATABASE_URL="file:/data/recettes.sqlite"
+
+# Switch to non-root user
+USER nextjs
+
 EXPOSE 3000
 
-# prisma CLI pour appliquer les migrations au démarrage
-RUN npm i -g prisma
-CMD sh -c "prisma migrate deploy && npm run start"
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start application
+CMD sh -c "prisma migrate deploy && node server.js"

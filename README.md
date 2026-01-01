@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍳 Application Recettes
 
-## Getting Started
+Application de gestion de recettes construite avec Next.js 16, optimisée pour un déploiement léger sur NAS Synology.
 
-First, run the development server:
+## ✨ Fonctionnalités
+
+- 📖 Gestion de recettes avec ingrédients et étapes
+- 📅 Planification de repas
+- 🛒 Génération automatique de listes de courses
+- 🔄 Gestion des récurrences de repas
+- 💾 Base de données SQLite (légère et portable)
+- 🐳 Déploiement Docker optimisé
+
+## 🚀 Démarrage rapide
+
+### Développement local
 
 ```bash
+# Installer les dépendances
+npm install
+
+# Configurer la base de données
+cp .env.example .env
+npx prisma generate
+npx prisma migrate dev
+
+# Optionnel: Seeder la base de données
+npm run db:seed
+
+# Lancer le serveur de développement
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production (Docker)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Build et démarrage
+docker-compose up -d
 
-## Learn More
+# L'application sera accessible sur http://localhost:3007
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 📚 Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **[README-DEPLOY.md](README-DEPLOY.md)** - Guide de déploiement sur NAS Synology
+- **[UPDATES.md](UPDATES.md)** - Guide de mise à jour et maintenance
+- **[.env.example](.env.example)** - Variables d'environnement disponibles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Stack Technique
 
-## Deploy on Vercel
+- **Framework** : [Next.js 16](https://nextjs.org/)
+- **Base de données** : SQLite + [Prisma ORM](https://www.prisma.io/)
+- **Validation** : [Zod](https://zod.dev/)
+- **Styling** : [Tailwind CSS 4](https://tailwindcss.com/)
+- **Déploiement** : Docker (optimisé pour faible consommation)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🐳 Caractéristiques Docker
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Image optimisée** : ~100-150 MB (mode standalone Next.js)
+- **Multi-stage build** : Build séparé de l'exécution
+- **Sécurité** : Exécution en utilisateur non-root
+- **Ressources** : 256-512 MB RAM, 0.25-0.5 CPU core
+- **Health check** : Monitoring automatique
+- **Logs** : Rotation automatique (max 30MB)
+
+## 🔒 Sécurité
+
+- ✅ Headers HTTP sécurisés (HSTS, X-Frame-Options, CSP, etc.)
+- ✅ Exécution en utilisateur non-root
+- ✅ Capabilities Linux minimales
+- ✅ Support HTTPS via reverse proxy
+- ✅ Scan de vulnérabilités automatique (GitHub Actions)
+
+## 🔄 Mises à jour
+
+Plusieurs options disponibles :
+
+```bash
+# Mise à jour manuelle
+bash scripts/update.sh
+
+# Mise à jour automatique via webhook
+# Voir UPDATES.md pour la configuration
+
+# Mise à jour planifiée (cron)
+# Voir UPDATES.md pour les exemples
+```
+
+Consultez [UPDATES.md](UPDATES.md) pour plus de détails.
+
+## 📦 Scripts disponibles
+
+```bash
+npm run dev           # Serveur de développement
+npm run build         # Build de production
+npm run start         # Serveur de production
+npm run lint          # Linter ESLint
+npm run db:seed       # Seeder la base de données
+```
+
+## 🏗️ Structure du projet
+
+```
+recettes-app/
+├── prisma/              # Schéma et migrations Prisma
+│   └── schema.prisma
+├── src/
+│   ├── app/            # Routes Next.js (App Router)
+│   │   ├── api/        # API routes
+│   │   └── ...
+│   └── lib/            # Utilitaires et helpers
+├── scripts/            # Scripts de déploiement et MAJ
+├── .github/            # GitHub Actions (CI/CD)
+├── docker-compose.yml  # Configuration Docker
+├── Dockerfile          # Image Docker optimisée
+└── README-DEPLOY.md    # Guide de déploiement
+```
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou une pull request.
+
+## 📄 Licence
+
+Ce projet est sous licence MIT.
+
+## 🆘 Support
+
+- Consultez [UPDATES.md](UPDATES.md) pour le dépannage
+- Vérifiez les logs : `docker logs recettes-app`
+- Ouvrez une issue sur GitHub
+
+---
+
+**Optimisé pour** : NAS Synology, Raspberry Pi, serveurs domestiques à faible consommation

@@ -1,0 +1,64 @@
+name: Docker Build & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: recettes-app:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: |
+          docker run -d --name recettes-test \
+            -e NODE_ENV=production \
+            -e DATABASE_URL=file:/data/recettes.sqlite \
+            recettes-app:test
+
+          # Attendre que le conteneur démarre
+          sleep 10
+
+          # Vérifier que le conteneur est en cours d'exécution
+          docker ps | grep recettes-test
+
+          # Vérifier le health check
+          docker inspect --format='{{.State.Health.Status}}' recettes-test || echo "Health check not ready yet"
+
+          # Afficher les logs
+          docker logs recettes-test
+
+          # Nettoyer
+          docker stop recettes-test
+          docker rm recettes-test
+
+      - name: Check image size
+        run: |
+          SIZE=$(docker image inspect recettes-app:test --format='{{.Size}}' | awk '{print $1/1024/1024}')
+          echo "Image size: ${SIZE}MB"
+
+          # Avertir si l'image est trop grande (>200MB)
+          if (( $(echo "$SIZE > 200" | bc -l) )); then
+            echo "⚠️ Warning: Image size is greater than 200MB"
+          else
+            echo "✓ Image size is optimal"
+          fi

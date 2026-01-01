@@ -1,0 +1,32 @@
+[
+  {
+    "id": "recettes-app-deploy",
+    "execute-command": "/volume1/docker/recettes-app/scripts/webhook-listener.sh",
+    "command-working-directory": "/volume1/docker/recettes-app",
+    "response-message": "Déploiement en cours...",
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "payload-hmac-sha256",
+            "secret": "VOTRE_SECRET_WEBHOOK_ICI",
+            "parameter": {
+              "source": "header",
+              "name": "X-Hub-Signature-256"
+            }
+          }
+        },
+        {
+          "match": {
+            "type": "value",
+            "value": "refs/heads/main",
+            "parameter": {
+              "source": "payload",
+              "name": "ref"
+            }
+          }
+        }
+      ]
+    }
+  }
+]

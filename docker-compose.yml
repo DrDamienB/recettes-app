@@ -1,26 +1,61 @@
 version: "3.9"
+
 services:
   recettes-app:
     container_name: recettes-app
     build:
-      context: https://github.com/DrDamienB/recettes-app.git#main
+      context: .
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
       - DATABASE_URL=file:/data/recettes.sqlite
       - PORT=3000
+      # Désactive la télémétrie Next.js
+      - NEXT_TELEMETRY_DISABLED=1
     ports:
-      - "3007:3000"  # change 3007 si déjà pris
+      - "3007:3000"  # Port externe:interne (changez 3007 si déjà utilisé)
     volumes:
       - recettes_data:/data
-      - recettes_cache:/app/.next
+
+    # Limites de ressources (optimisé pour NAS Synology)
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'        # Max 0.5 CPU (ajustez selon votre NAS)
+          memory: 512M       # Max 512 MB RAM
+        reservations:
+          cpus: '0.25'       # Minimum garanti
+          memory: 256M       # Minimum garanti
+
+    # Sécurité
+    read_only: false  # SQLite nécessite l'écriture
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+
+    # Redémarrage automatique
     restart: unless-stopped
+
+    # Health check amélioré
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
       interval: 30s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Logs (rotation automatique pour économiser l'espace)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   recettes_data:
-  recettes_cache:
+    driver: local
