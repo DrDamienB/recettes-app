@@ -21,7 +21,7 @@ type MealPlanItem = {
 
 type MealPlan = {
   id: number;
-  date: Date;
+  date: string;
   slot: string;
   peopleCount: number;
   items: MealPlanItem[];
@@ -73,7 +73,7 @@ export default function PlanningCalendar({ startDate, endDate, mealPlans, recipe
     } else {
       await assignRecipeToSlot(date, slot, parseInt(recipeId), peopleCount);
     }
-    router.refresh();
+    // revalidatePath est déjà appelé dans la server action
   };
 
   const handleUpdatePeople = async (
@@ -82,7 +82,7 @@ export default function PlanningCalendar({ startDate, endDate, mealPlans, recipe
     peopleCount: number
   ) => {
     await updatePeopleCount(date, slot, peopleCount);
-    router.refresh();
+    // revalidatePath est déjà appelé dans la server action
   };
 
   const handleGenerateShoppingList = async () => {

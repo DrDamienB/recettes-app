@@ -109,6 +109,7 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
                 <option value="Auchan">Auchan</option>
                 <option value="Carrefour">Carrefour</option>
                 <option value="Leclerc">Leclerc</option>
+                <option value="Placard">Placard</option>
               </select>
             </div>
             <div className="col-span-6">

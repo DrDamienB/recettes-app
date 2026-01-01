@@ -4,7 +4,20 @@
       "Bash(npm run dev:*)",
       "Bash(timeout /t 5 /nobreak)",
       "Bash(nul)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(Get-Process -Name node -ErrorAction SilentlyContinue)",
+      "Bash(Stop-Process -Force)",
+      "Bash(ping:*)",
+      "Bash(NUL)",
+      "Bash(tasklist /FI \"IMAGENAME eq node.exe\")",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(rm:*)",
+      "Bash(pkill:*)",
+      "Bash(kill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill -9)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

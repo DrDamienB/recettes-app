@@ -12,18 +12,11 @@ export default async function ShoppingListPage({
   const params = await searchParams;
   const id = params.id ? parseInt(params.id as string) : null;
 
+  // Si pas d'ID, afficher le bouton de génération
   if (!id) {
     return (
-      <main className="p-6 max-w-2xl mx-auto">
-        <h1 className="text-xl font-semibold mb-4">Liste de courses</h1>
-        <p className="text-gray-600 mb-6">
-          Aucune liste générée. Vous pouvez générer automatiquement une liste
-          pour les 7 prochains jours ou allez sur la page{" "}
-          <a href="/planning" className="underline text-blue-600">
-            Planning
-          </a>{" "}
-          pour personnaliser vos repas.
-        </p>
+      <main className="p-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Liste de courses</h1>
         <div className="flex justify-center">
           <GenerateButton />
         </div>

@@ -32,7 +32,11 @@ export async function getMealPlans(startDate: Date, endDate: Date) {
     },
   });
 
-  return mealPlans;
+  // Sérialiser les dates pour éviter les erreurs de sérialisation JSON
+  return mealPlans.map(mp => ({
+    ...mp,
+    date: mp.date.toISOString(),
+  }));
 }
 
 /**
@@ -209,6 +213,43 @@ export async function markItemAsPurchased(itemId: number, purchased: boolean) {
 }
 
 /**
+ * Supprime tous les items achetés pour un magasin donné dans une shopping list
+ */
+export async function deleteCompletedItemsForStore(
+  shoppingListId: number,
+  storeName: string
+) {
+  try {
+    // Récupérer tous les items achetés de ce magasin
+    const itemsToDelete = await prisma.shoppingListItem.findMany({
+      where: {
+        shoppingListId,
+        purchased: true,
+        Ingredient: {
+          storeName,
+        },
+      },
+      select: { id: true },
+    });
+
+    // Supprimer les items
+    await prisma.shoppingListItem.deleteMany({
+      where: {
+        id: { in: itemsToDelete.map((item) => item.id) },
+      },
+    });
+
+    revalidatePath("/shopping-list");
+    return { success: true, deletedCount: itemsToDelete.length };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Erreur lors de la suppression",
+    };
+  }
+}
+
+/**
  * Récupère une shopping list par son ID avec tous ses items agrégés
  */
 export async function getShoppingListById(id: number) {
@@ -257,7 +298,7 @@ export async function getShoppingListById(id: number) {
         const existing = itemsMap.get(ingredientId)!;
         existing.quantity += item.quantity;
         existing.mealPlans.push({
-          date: item.MealPlan.date,
+          date: item.MealPlan.date.toISOString(),
           slot: item.MealPlan.slot,
         });
         existing.relatedItemIds.push(item.id);
@@ -274,7 +315,7 @@ export async function getShoppingListById(id: number) {
           storeSection: item.Ingredient.storeSection,
           storeName: item.Ingredient.storeName,
           purchased: item.purchased,
-          mealPlans: [{ date: item.MealPlan.date, slot: item.MealPlan.slot }],
+          mealPlans: [{ date: item.MealPlan.date.toISOString(), slot: item.MealPlan.slot }],
           relatedItemIds: [item.id],
         });
       }
@@ -303,10 +344,10 @@ export async function getShoppingListById(id: number) {
       success: true,
       data: {
         id: shoppingList.id,
-        startDate: shoppingList.startDate,
-        endDate: shoppingList.endDate,
-        createdAt: shoppingList.createdAt,
-        groupedByStore,
+        startDate: shoppingList.startDate.toISOString(),
+        endDate: shoppingList.endDate.toISOString(),
+        createdAt: shoppingList.createdAt.toISOString(),
+        groupedByStore: groupedByStore,
       },
     };
   } catch (error) {
@@ -357,14 +398,6 @@ export async function generateShoppingList(startDate: Date, endDate: Date) {
             },
           },
         },
-        ShoppingListItem: {
-          where: {
-            purchased: true,
-          },
-          include: {
-            Ingredient: true,
-          },
-        },
       },
     });
 
@@ -376,23 +409,13 @@ export async function generateShoppingList(startDate: Date, endDate: Date) {
       },
     });
 
-    // 4. Pour chaque meal plan, créer les items (en excluant ce qui a déjà été acheté)
+    // 4. Pour chaque meal plan, créer les items
     for (const mealPlan of mealPlans) {
       const peopleCount = mealPlan.peopleCount;
-
-      // Récupérer les ingrédients déjà achetés pour ce meal plan
-      const purchasedIngredientIds = new Set(
-        mealPlan.ShoppingListItem.map((item: { ingredientId: number }) => item.ingredientId)
-      );
 
       for (const item of mealPlan.items) {
         for (const recipeIngredient of item.Recipe.ingredients) {
           const ingredientId = recipeIngredient.ingredientId;
-
-          // Skip si déjà acheté pour ce meal plan
-          if (purchasedIngredientIds.has(ingredientId)) {
-            continue;
-          }
 
           const qtyForMeal = recipeIngredient.qtyPerPerson * peopleCount;
           const recipeUnitCode = recipeIngredient.unitCode;
