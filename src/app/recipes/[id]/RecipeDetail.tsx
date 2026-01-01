@@ -11,7 +11,7 @@ type Ingredient = {
     nameNormalized: string;
   };
   Unit: {
-    name: string;
+    code: string;
   } | null;
 };
 
@@ -40,7 +40,7 @@ export default function RecipeDetail({
   const adjustedIngredients = ingredients.map((ing) => ({
     name: ing.Ingredient.nameNormalized,
     quantity: ing.qtyPerPerson * servings,
-    unit: ing.Unit?.name || ing.unitCode,
+    unit: ing.Unit?.code || ing.unitCode,
   }));
 
   return (

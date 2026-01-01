@@ -286,7 +286,7 @@ export async function getShoppingListById(id: number) {
         storeSection: string;
         storeName: string | null;
         purchased: boolean;
-        mealPlans: Array<{ date: Date; slot: string }>;
+        mealPlans: Array<{ date: string; slot: string }>;
         relatedItemIds: number[]; // Tous les IDs d'items agrégés
       }
     >();

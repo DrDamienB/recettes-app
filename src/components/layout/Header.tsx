@@ -8,7 +8,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  const navLinks = [
+  const navLinks: Array<{ href: string; label: string; icon: string; highlight?: boolean }> = [
     { href: "/recipes", label: "Recettes", icon: "📖" },
     { href: "/planning", label: "Planning", icon: "📅" },
     { href: "/shopping-list", label: "Liste de courses", icon: "🛒" },

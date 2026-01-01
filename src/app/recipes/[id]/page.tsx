@@ -40,9 +40,9 @@ export default async function RecipePage({ params }: RecipePageProps) {
   // Get steps from relation (RecipeStep table)
   const steps = recipe.steps.map((step) => step.text);
 
-  // Parse tags
+  // Parse tags and convert to strings
   const tags = Array.isArray(recipe.tags)
-    ? recipe.tags
+    ? recipe.tags.map(t => String(t))
     : typeof recipe.tags === "string"
     ? recipe.tags.split(",").map((t) => t.trim())
     : [];
