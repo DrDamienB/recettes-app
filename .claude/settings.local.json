@@ -19,7 +19,9 @@
       "Bash(xargs kill -9)",
       "Bash(netstat:*)",
       "Bash(npm run build:*)",
-      "Bash(npm audit fix:*)"
+      "Bash(npm audit fix:*)",
+      "Bash(docker-compose config:*)",
+      "Bash(docker compose:*)"
     ],
     "deny": [],
     "ask": []

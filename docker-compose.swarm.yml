@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   recettes-app:
-    container_name: recettes-app
+    image: recettes-app:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,20 +10,29 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=file:/data/recettes.sqlite
       - PORT=3000
-      # Désactive la télémétrie Next.js
       - NEXT_TELEMETRY_DISABLED=1
     ports:
-      - "3007:3000"  # Port externe:interne (changez 3007 si déjà utilisé)
+      - "3007:3000"
     volumes:
       - recettes_data:/data
 
-    # Limites de ressources (compatible Portainer / Docker Compose)
-    mem_limit: 512m           # Max 512 MB RAM
-    mem_reservation: 256m     # Minimum garanti
-    cpus: 0.5                 # Max 0.5 CPU (ajustez selon votre NAS)
+    # Limites de ressources (Docker Swarm)
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: unless-stopped
+        delay: 5s
+        max_attempts: 3
 
     # Sécurité
-    read_only: false  # SQLite nécessite l'écriture
+    read_only: false
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -33,10 +42,7 @@ services:
       - SETUID
       - SETGID
 
-    # Redémarrage automatique
-    restart: unless-stopped
-
-    # Health check amélioré
+    # Health check
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
       interval: 30s
@@ -44,7 +50,7 @@ services:
       retries: 3
       start_period: 40s
 
-    # Logs (rotation automatique pour économiser l'espace)
+    # Logs
     logging:
       driver: "json-file"
       options:

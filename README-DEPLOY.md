@@ -49,15 +49,12 @@ Ce guide vous accompagne pour déployer votre application de recettes sur un NAS
 Dans `docker-compose.yml`, modifiez selon les capacités de votre NAS :
 
 ```yaml
-deploy:
-  resources:
-    limits:
-      cpus: '0.5'      # Pour NAS plus puissant: '1.0' ou '2.0'
-      memory: 512M     # Pour plus de marge: 1G
-    reservations:
-      cpus: '0.25'
-      memory: 256M
+mem_limit: 512m           # Pour NAS plus puissant: 1g ou 2g
+mem_reservation: 256m     # Minimum garanti
+cpus: 0.5                 # Pour NAS plus puissant: 1.0 ou 2.0
 ```
+
+**Note** : Si vous utilisez Docker Swarm, utilisez `docker-compose.swarm.yml` qui utilise la syntaxe `deploy:`.
 
 ### Changer le port
 
