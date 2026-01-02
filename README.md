@@ -82,12 +82,14 @@ Plusieurs options disponibles :
 # Mise à jour manuelle
 bash scripts/update.sh
 
-# Mise à jour automatique via webhook
-# Voir UPDATES.md pour la configuration
+# Mise à jour automatique via webhook GitHub → Portainer
+# Configuration complète dans UPDATES.md
 
 # Mise à jour planifiée (cron)
 # Voir UPDATES.md pour les exemples
 ```
+
+✅ **Webhook configuré** : Push automatique sur GitHub déclenche le redéploiement sur Portainer
 
 Consultez [UPDATES.md](UPDATES.md) pour plus de détails.
 
