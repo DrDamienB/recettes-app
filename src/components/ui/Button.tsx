@@ -12,11 +12,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-300",
+    "bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600 active:bg-blue-800 dark:active:bg-blue-500 disabled:bg-blue-300 dark:disabled:bg-blue-900 dark:disabled:text-gray-500",
   secondary:
-    "bg-gray-200 text-gray-900 hover:bg-gray-300 active:bg-gray-400 disabled:bg-gray-100 disabled:text-gray-400",
+    "bg-gray-200 dark:bg-[#30363d] text-gray-900 dark:text-[#e6edf3] hover:bg-gray-300 dark:hover:bg-[#3c444d] active:bg-gray-400 dark:active:bg-[#484f59] disabled:bg-gray-100 dark:disabled:bg-[#21262d] disabled:text-gray-400 dark:disabled:text-gray-600",
   danger:
-    "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 disabled:bg-red-300",
+    "bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-600 active:bg-red-800 dark:active:bg-red-500 disabled:bg-red-300 dark:disabled:bg-red-900 dark:disabled:text-gray-500",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -40,7 +40,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2";
+      "font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:focus:ring-offset-[#0f1419] disabled:cursor-not-allowed inline-flex items-center justify-center gap-2";
 
     const widthStyle = fullWidth ? "w-full" : "";
 

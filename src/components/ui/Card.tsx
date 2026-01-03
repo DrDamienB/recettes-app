@@ -42,8 +42,8 @@ export default function Card({
   ...props
 }: CardProps) {
   const baseStyles =
-    "bg-white border border-gray-200 rounded-lg shadow-sm transition-shadow duration-200";
-  const hoverStyles = hover ? "hover:shadow-md cursor-pointer" : "";
+    "bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg shadow-sm transition-shadow duration-200";
+  const hoverStyles = hover ? "hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-black/20 cursor-pointer" : "";
 
   return (
     <div
@@ -62,7 +62,7 @@ export function CardHeader({
   ...props
 }: CardHeaderProps) {
   return (
-    <div className={`border-b border-gray-200 pb-3 mb-3 ${className}`} {...props}>
+    <div className={`border-b border-gray-200 dark:border-[#30363d] pb-3 mb-3 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -77,7 +77,7 @@ export function CardTitle({
 }: CardTitleProps) {
   return (
     <Component
-      className={`text-lg font-semibold text-gray-900 ${className}`}
+      className={`text-lg font-semibold text-gray-900 dark:text-[#e6edf3] ${className}`}
       {...props}
     >
       {children}
@@ -92,7 +92,7 @@ export function CardDescription({
   ...props
 }: CardDescriptionProps) {
   return (
-    <p className={`text-sm text-gray-600 mt-1 ${className}`} {...props}>
+    <p className={`text-sm text-gray-600 dark:text-[#8b949e] mt-1 ${className}`} {...props}>
       {children}
     </p>
   );
@@ -119,7 +119,7 @@ export function CardFooter({
 }: CardFooterProps) {
   return (
     <div
-      className={`border-t border-gray-200 pt-3 mt-3 flex items-center gap-2 ${className}`}
+      className={`border-t border-gray-200 dark:border-[#30363d] pt-3 mt-3 flex items-center gap-2 ${className}`}
       {...props}
     >
       {children}

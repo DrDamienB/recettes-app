@@ -26,11 +26,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || generatedId;
 
     const baseInputStyles =
-      "px-3 py-2 border rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed";
+      "px-3 py-2 border rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-[#21262d] disabled:cursor-not-allowed bg-white dark:bg-[#0f1419] text-gray-900 dark:text-[#e6edf3]";
 
     const errorStyles = error
-      ? "border-red-500 focus:ring-red-500"
-      : "border-gray-300";
+      ? "border-red-500 dark:border-red-400 focus:ring-red-500 dark:focus:ring-red-400"
+      : "border-gray-300 dark:border-[#30363d]";
 
     const widthStyle = fullWidth ? "w-full" : "";
 
@@ -39,10 +39,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-gray-700"
+            className="text-sm font-medium text-gray-700 dark:text-[#e6edf3]"
           >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-red-500 dark:text-red-400 ml-1">*</span>}
           </label>
         )}
 
@@ -59,7 +59,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         />
 
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="text-xs text-gray-500">
+          <p id={`${inputId}-hint`} className="text-xs text-gray-500 dark:text-[#8b949e]">
             {hint}
           </p>
         )}
@@ -67,7 +67,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p
             id={`${inputId}-error`}
-            className="text-xs text-red-600 flex items-center gap-1"
+            className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
             role="alert"
           >
             <svg

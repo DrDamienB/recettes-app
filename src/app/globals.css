@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
+  /* Light mode colors */
   --background: #ffffff;
   --foreground: #171717;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --muted: #6b7280;
+  --muted-foreground: #4b5563;
 }
 
 @theme inline {
@@ -14,8 +19,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark mode colors - optimized for contrast */
+    --background: #0f1419;
+    --foreground: #e6edf3;
+    --card-bg: #1c2128;
+    --card-border: #30363d;
+    --muted: #8b949e;
+    --muted-foreground: #7d8590;
   }
 }
 
