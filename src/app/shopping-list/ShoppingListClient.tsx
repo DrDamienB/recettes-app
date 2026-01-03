@@ -131,8 +131,8 @@ export default function ShoppingListClient({
         {/* En-tête harmonisé avec la page recettes */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Liste de courses</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-[#e6edf3]">Liste de courses</h1>
+            <p className="text-gray-600 dark:text-[#8b949e] mt-1">
               Semaine du {new Date(shoppingList.startDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} au{" "}
               {new Date(shoppingList.endDate).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
             </p>
@@ -162,8 +162,8 @@ export default function ShoppingListClient({
                 return (
                   <div key={storeName} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden mb-6">
                     {/* Header du magasin simplifié */}
-                    <div className="bg-gray-50 px-6 py-4 border-b">
-                      <h2 className="text-xl font-semibold text-gray-900">
+                    <div className="bg-gray-50 dark:bg-[#1c2128] px-6 py-4 border-b">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-[#e6edf3]">
                         {storeName}
                       </h2>
                     </div>

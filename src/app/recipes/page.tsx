@@ -107,8 +107,8 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
     <main>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Recettes</h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <h1 className="text-2xl font-semibold dark:text-[#e6edf3]">Recettes</h1>
+          <p className="text-sm text-gray-600 dark:text-[#8b949e] mt-1">
             {hasSearch ? (
               <>
                 {totalFiltered} résultat{totalFiltered > 1 ? "s" : ""} sur {totalRecipes}{" "}
@@ -140,13 +140,13 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
       {allTags.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-gray-700">Tags :</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-[#e6edf3]">Tags :</span>
             <a
               href={buildPageUrl(1, "")}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 !selectedTag
                   ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-gray-100 dark:bg-[#30363d] text-gray-700 dark:text-[#e6edf3] hover:bg-gray-200 dark:hover:bg-[#3c444d]"
               }`}
             >
               Tous
@@ -158,7 +158,7 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedTag === tag
                     ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-gray-100 dark:bg-[#30363d] text-gray-700 dark:text-[#e6edf3] hover:bg-gray-200 dark:hover:bg-[#3c444d]"
                 }`}
               >
                 {tag}
@@ -273,7 +273,7 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
                 </Button>
               </a>
 
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm text-gray-600 dark:text-[#8b949e] font-medium">
                 Page {validPage} sur {totalPages}
               </span>
 

@@ -119,13 +119,13 @@ export default function PlanningCalendar({ startDate, endDate, mealPlans, recipe
   return (
     <div className="space-y-6">
       {/* Sticky Header */}
-      <div className="sticky top-16 z-40 bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200 shadow-sm">
+      <div className="sticky top-16 z-40 bg-gray-50 dark:bg-[#0f1419] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200 dark:border-[#30363d] shadow-sm">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Title and View Selector */}
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Planning des repas</h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-[#e6edf3]">Planning des repas</h1>
+              <p className="text-sm text-gray-600 dark:text-[#8b949e] mt-1">
                 Du {startDate.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} au{" "}
                 {endDate.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
               </p>
@@ -219,14 +219,14 @@ export default function PlanningCalendar({ startDate, endDate, mealPlans, recipe
                       {/* Day Header */}
                       <div className="mb-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-bold text-gray-900 capitalize">{dayOfWeek}</h3>
+                          <h3 className="font-bold text-gray-900 dark:text-[#e6edf3] capitalize">{dayOfWeek}</h3>
                           {isToday(day) && (
                             <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">
                               Aujourd'hui
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600">{dateStr}</p>
+                        <p className="text-sm text-gray-600 dark:text-[#8b949e]">{dateStr}</p>
                       </div>
 
                       {/* Meal Slots */}

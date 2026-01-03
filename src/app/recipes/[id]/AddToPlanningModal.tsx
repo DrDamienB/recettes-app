@@ -58,7 +58,7 @@ export default function AddToPlanningModal({ recipeId, recipeTitle, servingsDefa
       <Button
         variant="primary"
         size="lg"
-        className="flex-1"
+        fullWidth
         onClick={() => setIsOpen(true)}
       >
         <span className="mr-2">📅</span>

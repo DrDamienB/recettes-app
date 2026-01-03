@@ -98,21 +98,7 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
             </div>
           </div>
           <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-6">
-              <label className="block text-sm">Magasin</label>
-              <select className="border rounded h-11 p-2.5 w-full"
-                value={r.storeName}
-                onChange={e => updateRow(i, "storeName", e.target.value)}>
-                <option value="Fresh">Fresh</option>
-                <option value="Asiatique">Asiatique</option>
-                <option value="Primeur">Primeur</option>
-                <option value="Auchan">Auchan</option>
-                <option value="Carrefour">Carrefour</option>
-                <option value="Leclerc">Leclerc</option>
-                <option value="Placard">Placard</option>
-              </select>
-            </div>
-            <div className="col-span-6">
+            <div className="col-span-12">
               <label className="block text-sm">Rayon</label>
               <select className="border rounded h-11 p-2.5 w-full"
                 value={r.storeSection}

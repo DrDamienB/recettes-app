@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import Header from "@/components/layout/Header";
-import Breadcrumb from "@/components/layout/Breadcrumb";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,7 +54,6 @@ export default function RootLayout({
         <ServiceWorkerRegistration />
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Breadcrumb />
           {children}
         </div>
       </body>

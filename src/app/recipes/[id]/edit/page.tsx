@@ -162,25 +162,6 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
         />
 
         <div className="space-y-2">
-          <label htmlFor="storeName" className="block text-sm font-medium text-gray-700">
-            Magasin préféré
-          </label>
-          <select
-            id="storeName"
-            name="storeName"
-            defaultValue={recipe.ingredients?.[0]?.Ingredient?.storeName || "Auchan"}
-            className="w-full h-12 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="Fresh">Fresh</option>
-            <option value="Asiatique">Asiatique</option>
-            <option value="Primeur">Primeur</option>
-            <option value="Auchan">Auchan</option>
-            <option value="Carrefour">Carrefour</option>
-            <option value="Leclerc">Leclerc</option>
-          </select>
-        </div>
-
-        <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             Ingrédients (par personne)
           </label>
