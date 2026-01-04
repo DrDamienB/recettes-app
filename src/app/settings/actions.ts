@@ -1,8 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { changePassword, getCurrentSession, revokeDevice } from "@/lib/auth";
+import { changePassword, getCurrentSession, revokeDevice, logout as authLogout } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 // Mettre à jour les formes d'une unité
 export async function updateUnitForms(
@@ -255,4 +256,10 @@ function parseCsvLine(line: string): string[] {
 
   fields.push(current);
   return fields;
+}
+
+// Déconnexion
+export async function logoutAction() {
+  await authLogout();
+  redirect("/login");
 }

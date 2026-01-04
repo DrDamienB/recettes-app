@@ -9,8 +9,8 @@ import {
   revokeDeviceAction,
   exportRecipesCSV,
   importRecipesCSV,
+  logoutAction,
 } from "./actions";
-import { logout } from "@/lib/auth";
 
 type Tab = "units" | "import" | "export" | "account";
 
@@ -108,8 +108,7 @@ export default function SettingsPage() {
   };
 
   const handleLogout = async () => {
-    await logout();
-    window.location.href = "/login";
+    await logoutAction();
   };
 
   const tabs: { id: Tab; label: string; icon: string }[] = [

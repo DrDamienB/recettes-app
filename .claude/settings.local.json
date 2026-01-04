@@ -35,7 +35,10 @@
       "Bash(powershell \"Stop-Process -Id 31696 -Force\")",
       "Bash(npx prisma migrate dev:*)",
       "Bash(npx prisma db seed:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(tasklist:*)",
+      "Bash(powershell \"Stop-Process -Id 26400,33212,52524 -Force\")"
     ],
     "deny": [],
     "ask": []
