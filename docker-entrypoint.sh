@@ -22,7 +22,7 @@ fi
 # Si c'est une nouvelle base de données, exécuter le seed
 if [ "$NEW_DB" = true ]; then
   echo "New database detected, running seed..."
-  npx ts-node prisma/seed.ts || echo "Warning: Seed failed"
+  node prisma/seed.js || echo "Warning: Seed failed"
 fi
 
 echo "Starting Next.js server..."

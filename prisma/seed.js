@@ -1,27 +1,52 @@
 // prisma/seed.js
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
+
 const prisma = new PrismaClient();
 
 async function main() {
-  // UNITÉS
+  console.log("🌱 Starting seed...");
+
+  // UNITÉS avec formes d'accord
   const units = [
-    { code: "g", type: "mass", ratioToBase: 1 },
-    { code: "kg", type: "mass", ratioToBase: 1000 },
-    { code: "mL", type: "volume", ratioToBase: 1 },
-    { code: "L", type: "volume", ratioToBase: 1000 },
-    { code: "piece", type: "count", ratioToBase: 1 },
-    { code: "cac", type: "volume", ratioToBase: 5 },
-    { code: "cas", type: "volume", ratioToBase: 15 },
+    { code: "g", type: "mass", ratioToBase: 1, singularForm: "g", pluralForm: "g", gender: "m" },
+    { code: "kg", type: "mass", ratioToBase: 1000, singularForm: "kg", pluralForm: "kg", gender: "m" },
+    { code: "mL", type: "volume", ratioToBase: 1, singularForm: "mL", pluralForm: "mL", gender: "m" },
+    { code: "L", type: "volume", ratioToBase: 1000, singularForm: "L", pluralForm: "L", gender: "m" },
+    { code: "piece", type: "count", ratioToBase: 1, singularForm: "pièce", pluralForm: "pièces", gender: "f" },
+    { code: "cac", type: "volume", ratioToBase: 5, singularForm: "c.à.c", pluralForm: "c.à.c", gender: "f" },
+    { code: "cas", type: "volume", ratioToBase: 15, singularForm: "c.à.s", pluralForm: "c.à.s", gender: "f" },
   ];
+
+  console.log("📏 Creating units...");
   for (const u of units) {
     await prisma.unit.upsert({
       where: { code: u.code },
-      update: { ...u },
+      update: {
+        singularForm: u.singularForm,
+        pluralForm: u.pluralForm,
+        gender: u.gender,
+      },
       create: { ...u },
     });
   }
+  console.log("✅ Units created");
+
+  // UTILISATEUR PAR DÉFAUT
+  console.log("👤 Creating admin user...");
+  const passwordHash = await bcrypt.hash("admin123", 10);
+  await prisma.user.upsert({
+    where: { username: "admin" },
+    update: {},
+    create: {
+      username: "admin",
+      passwordHash,
+    },
+  });
+  console.log("✅ Seed user created: admin (password: admin123)");
 
   // INGRÉDIENTS
+  console.log("🥕 Creating sample ingredients...");
   const farine = await prisma.ingredient.upsert({
     where: { nameNormalized: "farine" },
     update: {},
@@ -69,8 +94,10 @@ async function main() {
       synonyms: [],
     },
   });
+  console.log("✅ Ingredients created");
 
   // RECETTE
+  console.log("📖 Creating sample recipe...");
   const crepes = await prisma.recipe.upsert({
     where: { slug: "crepes-sucrees" },
     update: {},
@@ -106,8 +133,9 @@ async function main() {
       startDate: new Date(),
     },
   });
+  console.log("✅ Recipe created");
 
-  console.log("✅ Seed done.");
+  console.log("🎉 Seed completed successfully!");
 }
 
 main()
