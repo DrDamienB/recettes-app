@@ -26,7 +26,13 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(Get-Process -Id 26400)",
-      "Bash(npx prisma generate:*)"
+      "Bash(npx prisma generate:*)",
+      "Bash(cat:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist /FI \"PID eq 31696\" /FO LIST)",
+      "Bash(powershell \"Get-Process -Id 31696 | Select-Object Name, Id, Path\")",
+      "Bash(curl:*)",
+      "Bash(powershell \"Stop-Process -Id 31696 -Force\")"
     ],
     "deny": [],
     "ask": []

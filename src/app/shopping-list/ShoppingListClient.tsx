@@ -2,7 +2,8 @@
 
 import { markItemAsPurchased, deleteCompletedItemsForStore } from "../planning/actions";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 
 type ShoppingItem = {
   id: number;
@@ -88,13 +89,52 @@ export default function ShoppingListClient({
     itemCount: number;
   }>({ isOpen: false, storeName: "", itemCount: 0 });
 
-  const handleTogglePurchased = async (item: ShoppingItem) => {
-    // Update optimiste - instant UI
-    // Marquer tous les items liés (agrégés)
-    for (const itemId of item.relatedItemIds) {
-      await markItemAsPurchased(itemId, !item.purchased);
+  // Hook pour gérer le mode hors ligne
+  const { isOnline, addPendingAction, getLocalState, syncPendingActions, hasPendingActions } =
+    useOfflineSync(shoppingList.id);
+
+  // Synchroniser automatiquement quand la connexion revient
+  useEffect(() => {
+    if (isOnline && hasPendingActions) {
+      console.log("[Shopping] Connexion rétablie, synchronisation...");
+      syncPendingActions(async (itemId, purchased) => {
+        await markItemAsPurchased(itemId, purchased);
+      });
     }
-    // revalidatePath est déjà appelé dans la server action
+  }, [isOnline, hasPendingActions, syncPendingActions]);
+
+  const handleTogglePurchased = async (item: ShoppingItem) => {
+    const newState = !item.purchased;
+
+    // Mode hors ligne : sauvegarder localement
+    if (!isOnline) {
+      console.log("[Shopping] Mode hors ligne, sauvegarde locale");
+      for (const itemId of item.relatedItemIds) {
+        addPendingAction(itemId, newState);
+      }
+      // Recharger la page pour afficher l'état local
+      router.refresh();
+      return;
+    }
+
+    // Mode en ligne : update serveur directement
+    try {
+      for (const itemId of item.relatedItemIds) {
+        await markItemAsPurchased(itemId, newState);
+      }
+    } catch (error) {
+      console.error("[Shopping] Erreur serveur, sauvegarde locale", error);
+      // En cas d'erreur réseau, sauvegarder localement
+      for (const itemId of item.relatedItemIds) {
+        addPendingAction(itemId, newState);
+      }
+    }
+  };
+
+  // Obtenir l'état effectif d'un item (serveur ou local)
+  const getItemPurchasedState = (item: ShoppingItem): boolean => {
+    // Utiliser l'état local si disponible, sinon l'état serveur
+    return getLocalState(item.id, item.purchased);
   };
 
   const toggleExpandStore = (storeName: string) => {
@@ -138,6 +178,37 @@ export default function ShoppingListClient({
             </p>
           </div>
         </div>
+
+        {/* Indicateur de statut réseau */}
+        {(!isOnline || hasPendingActions) && (
+          <div className={`mb-4 px-4 py-3 rounded-lg flex items-center gap-3 ${
+            !isOnline
+              ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+              : 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+          }`}>
+            <span className="text-2xl">
+              {!isOnline ? '📵' : '🔄'}
+            </span>
+            <div className="flex-1">
+              <p className={`font-medium ${
+                !isOnline
+                  ? 'text-amber-900 dark:text-amber-200'
+                  : 'text-blue-900 dark:text-blue-200'
+              }`}>
+                {!isOnline ? 'Mode hors ligne' : 'Synchronisation en cours...'}
+              </p>
+              <p className={`text-sm ${
+                !isOnline
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-blue-700 dark:text-blue-300'
+              }`}>
+                {!isOnline
+                  ? 'Vos modifications seront enregistrées localement et synchronisées automatiquement.'
+                  : 'Envoi de vos modifications au serveur...'}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div>
           {stores.length === 0 ? (
@@ -195,7 +266,7 @@ export default function ShoppingListClient({
                                       <label className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group">
                                         <input
                                           type="checkbox"
-                                          checked={item.purchased}
+                                          checked={getItemPurchasedState(item)}
                                           onChange={() => handleTogglePurchased(item)}
                                           className="mt-0.5 h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 cursor-pointer checked:bg-indigo-600 checked:border-indigo-600 transition-all"
                                         />
@@ -265,7 +336,7 @@ export default function ShoppingListClient({
                                           <label className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                                             <input
                                               type="checkbox"
-                                              checked={item.purchased}
+                                              checked={getItemPurchasedState(item)}
                                               onChange={() => handleTogglePurchased(item)}
                                               className="mt-0.5 h-6 w-6 sm:h-7 sm:w-7 rounded-md border-2 border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 cursor-pointer checked:bg-green-600 checked:border-green-600"
                                             />
