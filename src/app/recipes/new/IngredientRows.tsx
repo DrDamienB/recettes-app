@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui";
+import { STORE_SECTIONS, DEFAULT_STORES } from "@/lib/constants";
 
 type Row = {
   name: string;
@@ -20,30 +21,6 @@ type IngredientRowsProps = {
     storeName?: string;
   }>;
 };
-
-const STORE_SECTIONS = [
-  "primeur",
-  "crèmerie",
-  "boulangerie",
-  "boucherie/poissonnerie",
-  "conserves/épicerie salée",
-  "sucré",
-  "surgelés",
-  "boissons",
-  "entretien",
-  "épicerie salée",
-];
-
-const STORES = [
-  "Auchan",
-  "Carrefour",
-  "Leclerc",
-  "Intermarché",
-  "Super U",
-  "Lidl",
-  "Aldi",
-  "Autre",
-];
 
 export default function IngredientRows({ defaultIngredients }: IngredientRowsProps = {}) {
   const initialRows: Row[] = defaultIngredients && defaultIngredients.length > 0
@@ -162,7 +139,7 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
                   value={r.storeName}
                   onChange={e => updateRow(i, "storeName", e.target.value)}
                 >
-                  {STORES.map(store => (
+                  {DEFAULT_STORES.map(store => (
                     <option key={store} value={store}>{store}</option>
                   ))}
                 </select>

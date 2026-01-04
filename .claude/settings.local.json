@@ -41,7 +41,9 @@
       "Bash(powershell \"Stop-Process -Id 26400,33212,52524 -Force\")",
       "Bash(powershell \"Stop-Process -Id 53020,66468,32412 -Force\")",
       "Bash(npx ts-node:*)",
-      "Bash(node check_user.js:*)"
+      "Bash(node check_user.js:*)",
+      "Bash(docker logs:*)",
+      "Bash(node prisma/seed.js:*)"
     ],
     "deny": [],
     "ask": []

@@ -94,16 +94,6 @@ export default function RecipeDetail({
                 </span>
               </>
             )}
-            {totalMin > 0 && (
-              <>
-                <span className="text-gray-400 dark:text-[#484f59]">|</span>
-                <span className="flex items-center gap-1">
-                  <span>⏲️</span>
-                  <span className="text-gray-600 dark:text-[#8b949e]">Total:</span>
-                  <span className="font-medium text-gray-900 dark:text-[#e6edf3]">{totalMin}min</span>
-                </span>
-              </>
-            )}
           </div>
 
           {/* Version desktop : cartes */}
