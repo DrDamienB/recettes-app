@@ -32,7 +32,10 @@
       "Bash(tasklist /FI \"PID eq 31696\" /FO LIST)",
       "Bash(powershell \"Get-Process -Id 31696 | Select-Object Name, Id, Path\")",
       "Bash(curl:*)",
-      "Bash(powershell \"Stop-Process -Id 31696 -Force\")"
+      "Bash(powershell \"Stop-Process -Id 31696 -Force\")",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma db seed:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

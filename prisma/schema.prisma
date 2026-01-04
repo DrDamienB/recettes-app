@@ -11,7 +11,56 @@ model Unit {
   code             String             @id // "g" | "kg" | "mL" | "L" | "piece" | "cac" | "cas"
   type             String // "mass" | "volume" | "count"
   ratioToBase      Float // ex: kg=1000 (vers g) ; L=1000 (vers mL) ; cac=5 ; cas=15
+
+  // Nouvelles colonnes pour l'accord en genre et nombre
+  singularForm     String? // forme au singulier (ex: "pièce", "tranche")
+  pluralForm       String? // forme au pluriel (ex: "pièces", "tranches")
+  gender           String? // "m" | "f" pour accord éventuel d'adjectifs
+
   RecipeIngredient RecipeIngredient[]
+}
+
+// Compte utilisateur unique avec multi-devices
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  passwordHash String // bcrypt hash
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions     Session[]
+  devices      Device[]
+}
+
+// Session d'authentification (durée 6 mois)
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  deviceId  Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// Appareil autorisé
+model Device {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  deviceName   String // ex: "iPhone de Damien", "iPad Cuisine"
+  fingerprint  String    @unique // hash du user-agent + IP lors de la première connexion
+  lastSeenAt   DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+
+  User     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@index([fingerprint])
 }
 
 model Ingredient {
