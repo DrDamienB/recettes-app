@@ -12,6 +12,8 @@ type Ingredient = {
   };
   Unit: {
     code: string;
+    singularForm: string | null;
+    pluralForm: string | null;
   } | null;
 };
 
@@ -26,11 +28,23 @@ function formatQuantity(qty: number): string {
   return Number.isInteger(qty) ? qty.toString() : qty.toFixed(1);
 }
 
-function formatUnit(unit: string, quantity: number): string {
-  if (unit === "piece") {
-    return quantity > 1 ? "pièces" : "pièce";
+function formatUnit(
+  unitCode: string,
+  quantity: number,
+  unitData: { singularForm: string | null; pluralForm: string | null } | null
+): string {
+  // Si on a les formes dans la BDD, les utiliser
+  if (unitData) {
+    if (quantity > 1 && unitData.pluralForm) {
+      return unitData.pluralForm;
+    }
+    if (unitData.singularForm) {
+      return unitData.singularForm;
+    }
   }
-  return unit;
+
+  // Sinon, fallback sur le code de l'unité
+  return unitCode;
 }
 
 export default function RecipeDetail({
@@ -48,6 +62,9 @@ export default function RecipeDetail({
     name: ing.Ingredient.nameNormalized,
     quantity: ing.qtyPerPerson * servings,
     unit: ing.Unit?.code || ing.unitCode,
+    unitData: ing.Unit
+      ? { singularForm: ing.Unit.singularForm, pluralForm: ing.Unit.pluralForm }
+      : null,
   }));
 
   return (
@@ -177,7 +194,7 @@ export default function RecipeDetail({
                 </span>
                 {" : "}
                 <span className="text-gray-700 dark:text-[#8b949e]">
-                  {formatQuantity(ing.quantity)} {formatUnit(ing.unit, ing.quantity)}
+                  {formatQuantity(ing.quantity)} {formatUnit(ing.unit, ing.quantity, ing.unitData)}
                 </span>
               </li>
             ))}
