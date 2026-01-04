@@ -10,9 +10,7 @@ export async function deleteRecipe(recipeId: number) {
     const mealPlans = await prisma.mealPlanItem.findMany({
       where: { recipeId },
       include: {
-        mealPlan: {
-          include: { date: true }
-        }
+        MealPlan: true
       }
     });
 
@@ -21,8 +19,8 @@ export async function deleteRecipe(recipeId: number) {
       return {
         success: false,
         affectedPlans: mealPlans.map(mp => ({
-          date: mp.mealPlan.date.toISOString(),
-          slot: mp.mealPlan.slot
+          date: mp.MealPlan.date.toISOString(),
+          slot: mp.MealPlan.slot
         })),
         message: `Cette recette est utilisée dans ${mealPlans.length} planning(s). Confirmez pour supprimer.`
       };
