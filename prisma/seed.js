@@ -32,6 +32,29 @@ async function main() {
   }
   console.log("✅ Units created");
 
+  // MAGASINS PAR DÉFAUT
+  console.log("🏪 Creating default stores...");
+  const stores = [
+    { name: "Placard", order: 0 },
+    { name: "Auchan", order: 1 },
+    { name: "Carrefour", order: 2 },
+    { name: "Leclerc", order: 3 },
+    { name: "Intermarché", order: 4 },
+    { name: "Super U", order: 5 },
+    { name: "Lidl", order: 6 },
+    { name: "Aldi", order: 7 },
+    { name: "Autre", order: 8 },
+  ];
+
+  for (const store of stores) {
+    await prisma.store.upsert({
+      where: { name: store.name },
+      update: { order: store.order },
+      create: store,
+    });
+  }
+  console.log("✅ Stores created");
+
   // UTILISATEUR PAR DÉFAUT
   console.log("👤 Creating admin user...");
   const passwordHash = await bcrypt.hash("admin123", 10);

@@ -20,6 +20,14 @@ model Unit {
   RecipeIngredient RecipeIngredient[]
 }
 
+// Magasins personnalisables
+model Store {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  order     Int      @default(0) // Pour trier l'ordre d'affichage
+  createdAt DateTime @default(now())
+}
+
 // Compte utilisateur unique avec multi-devices
 model User {
   id           Int       @id @default(autoincrement())

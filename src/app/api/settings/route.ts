@@ -15,13 +15,18 @@ export async function GET() {
       orderBy: { code: "asc" },
     });
 
+    // Récupérer les magasins
+    const stores = await prisma.store.findMany({
+      orderBy: { order: "asc" },
+    });
+
     // Récupérer les appareils de l'utilisateur
     const devices = await prisma.device.findMany({
       where: { userId: session.userId },
       orderBy: { lastSeenAt: "desc" },
     });
 
-    return NextResponse.json({ units, devices });
+    return NextResponse.json({ units, stores, devices });
   } catch (error) {
     console.error("Error fetching settings:", error);
     return NextResponse.json(

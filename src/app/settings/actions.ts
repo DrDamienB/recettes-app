@@ -361,3 +361,63 @@ export async function logoutAction() {
   await authLogout();
   redirect("/login");
 }
+
+// ===== GESTION DES MAGASINS =====
+
+export async function createStore(name: string) {
+  try {
+    // Récupérer l'ordre max actuel
+    const maxOrder = await prisma.store.findFirst({
+      orderBy: { order: "desc" },
+      select: { order: true },
+    });
+
+    await prisma.store.create({
+      data: {
+        name,
+        order: (maxOrder?.order ?? -1) + 1,
+      },
+    });
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Ce magasin existe déjà ou une erreur est survenue",
+    };
+  }
+}
+
+export async function deleteStore(id: number) {
+  try {
+    await prisma.store.delete({
+      where: { id },
+    });
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Impossible de supprimer ce magasin",
+    };
+  }
+}
+
+export async function updateStoreOrder(id: number, newOrder: number) {
+  try {
+    await prisma.store.update({
+      where: { id },
+      data: { order: newOrder },
+    });
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: "Impossible de mettre à jour l'ordre",
+    };
+  }
+}
