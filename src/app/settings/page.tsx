@@ -5,7 +5,10 @@ import { useFormStatus } from "react-dom";
 import { Button, Input } from "@/components/ui";
 import {
   updateUnitForms,
+  createUnit,
+  deleteUnit,
   changePasswordAction,
+  changeUsernameAction,
   revokeDeviceAction,
   exportRecipesCSV,
   importRecipesCSV,
@@ -34,8 +37,13 @@ export default function SettingsPage() {
     errors?: string[];
     message?: string;
   } | null>(null);
+  const [showAddUnitModal, setShowAddUnitModal] = useState(false);
   const [passwordState, passwordAction] = useActionState(
     changePasswordAction,
+    null
+  );
+  const [usernameState, usernameAction] = useActionState(
+    changeUsernameAction,
     null
   );
 
@@ -111,6 +119,53 @@ export default function SettingsPage() {
     await logoutAction();
   };
 
+  const handleCreateUnit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const code = formData.get("code") as string;
+    const type = formData.get("type") as string;
+    const ratioToBase = parseFloat(formData.get("ratioToBase") as string);
+    const singularForm = formData.get("singularForm") as string;
+    const pluralForm = formData.get("pluralForm") as string;
+    const gender = formData.get("gender") as string;
+
+    const result = await createUnit(
+      code,
+      type,
+      ratioToBase,
+      singularForm,
+      pluralForm,
+      gender
+    );
+
+    if (result.success) {
+      setShowAddUnitModal(false);
+      const res = await fetch("/api/settings");
+      const data = await res.json();
+      setUnits(data.units || []);
+      (e.target as HTMLFormElement).reset();
+    } else {
+      alert(result.error || "Erreur lors de la création de l'unité");
+    }
+  };
+
+  const handleDeleteUnit = async (code: string) => {
+    if (
+      confirm(
+        "Êtes-vous sûr de vouloir supprimer cette unité ? Cette action est irréversible."
+      )
+    ) {
+      const result = await deleteUnit(code);
+      if (result.success) {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        setUnits(data.units || []);
+      } else {
+        alert(result.error || "Erreur lors de la suppression");
+      }
+    }
+  };
+
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "units", label: "Unités", icon: "📏" },
     { id: "import", label: "Import", icon: "📥" },
@@ -153,15 +208,107 @@ export default function SettingsPage() {
       <div className="py-6">
         {activeTab === "units" && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-2">
-                Gestion des unités
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-[#8b949e]">
-                Modifiez les formes singulières et plurielles des unités pour
-                un affichage correct.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-2">
+                  Gestion des unités
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-[#8b949e]">
+                  Modifiez les formes singulières et plurielles des unités pour
+                  un affichage correct.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowAddUnitModal(true)}
+                variant="primary"
+                size="md"
+              >
+                Ajouter une unité
+              </Button>
             </div>
+
+            {/* Modal Ajouter une unité */}
+            {showAddUnitModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg p-6 max-w-md w-full mx-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-4">
+                    Ajouter une nouvelle unité
+                  </h3>
+                  <form onSubmit={handleCreateUnit} className="space-y-4">
+                    <Input
+                      name="code"
+                      label="Code"
+                      placeholder="Ex: kg, L, unite"
+                      required
+                      fullWidth
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-1">
+                        Type
+                      </label>
+                      <select
+                        name="type"
+                        required
+                        className="w-full px-3 py-2 bg-white dark:bg-[#0f1419] border border-gray-300 dark:border-[#30363d] rounded-lg text-gray-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="mass">Masse (mass)</option>
+                        <option value="volume">Volume (volume)</option>
+                        <option value="count">Quantité (count)</option>
+                      </select>
+                    </div>
+                    <Input
+                      name="ratioToBase"
+                      label="Ratio vers l'unité de base"
+                      type="number"
+                      step="0.001"
+                      placeholder="Ex: 1000 pour kg vers g"
+                      required
+                      fullWidth
+                    />
+                    <Input
+                      name="singularForm"
+                      label="Forme singulière"
+                      placeholder="Ex: pièce"
+                      required
+                      fullWidth
+                    />
+                    <Input
+                      name="pluralForm"
+                      label="Forme plurielle"
+                      placeholder="Ex: pièces"
+                      required
+                      fullWidth
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-1">
+                        Genre
+                      </label>
+                      <select
+                        name="gender"
+                        required
+                        className="w-full px-3 py-2 bg-white dark:bg-[#0f1419] border border-gray-300 dark:border-[#30363d] rounded-lg text-gray-900 dark:text-[#e6edf3] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="m">Masculin (m)</option>
+                        <option value="f">Féminin (f)</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        onClick={() => setShowAddUnitModal(false)}
+                        variant="secondary"
+                        size="md"
+                      >
+                        Annuler
+                      </Button>
+                      <Button type="submit" variant="primary" size="md">
+                        Créer l'unité
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
 
             {loading ? (
               <p className="text-gray-600 dark:text-[#8b949e]">
@@ -174,7 +321,7 @@ export default function SettingsPage() {
                     key={unit.code}
                     className="bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg p-4"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-end">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3] mb-1">
                           Code
@@ -215,6 +362,13 @@ export default function SettingsPage() {
                         size="md"
                       >
                         Mettre à jour
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteUnit(unit.code)}
+                        variant="danger"
+                        size="md"
+                      >
+                        Supprimer
                       </Button>
                     </div>
                   </div>
@@ -329,6 +483,50 @@ export default function SettingsPage() {
 
         {activeTab === "account" && (
           <div className="space-y-8">
+            {/* Change Username */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-2">
+                Changer le nom d'utilisateur
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-[#8b949e] mb-4">
+                Modifiez votre nom d'utilisateur pour la connexion.
+              </p>
+
+              {usernameState?.success && (
+                <div className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 px-4 py-3 rounded-lg">
+                  <p className="text-sm font-medium">{usernameState.message}</p>
+                </div>
+              )}
+
+              {usernameState?.error && (
+                <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
+                  <p className="text-sm font-medium">{usernameState.error}</p>
+                </div>
+              )}
+
+              <div className="bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg p-6">
+                <form action={usernameAction} className="space-y-4 max-w-md">
+                  <Input
+                    name="newUsername"
+                    type="text"
+                    label="Nouveau nom d'utilisateur"
+                    required
+                    fullWidth
+                    autoComplete="username"
+                  />
+                  <Input
+                    name="password"
+                    type="password"
+                    label="Mot de passe (pour confirmer)"
+                    required
+                    fullWidth
+                    autoComplete="current-password"
+                  />
+                  <SubmitButton>Changer le nom d'utilisateur</SubmitButton>
+                </form>
+              </div>
+            </div>
+
             {/* Change Password */}
             <div>
               <h2 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-2">
@@ -350,33 +548,35 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <form action={passwordAction} className="space-y-4 max-w-md">
-                <Input
-                  name="oldPassword"
-                  type="password"
-                  label="Mot de passe actuel"
-                  required
-                  fullWidth
-                  autoComplete="current-password"
-                />
-                <Input
-                  name="newPassword"
-                  type="password"
-                  label="Nouveau mot de passe"
-                  required
-                  fullWidth
-                  autoComplete="new-password"
-                />
-                <Input
-                  name="confirmPassword"
-                  type="password"
-                  label="Confirmer le nouveau mot de passe"
-                  required
-                  fullWidth
-                  autoComplete="new-password"
-                />
-                <SubmitButton>Changer le mot de passe</SubmitButton>
-              </form>
+              <div className="bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg p-6">
+                <form action={passwordAction} className="space-y-4 max-w-md">
+                  <Input
+                    name="oldPassword"
+                    type="password"
+                    label="Mot de passe actuel"
+                    required
+                    fullWidth
+                    autoComplete="current-password"
+                  />
+                  <Input
+                    name="newPassword"
+                    type="password"
+                    label="Nouveau mot de passe"
+                    required
+                    fullWidth
+                    autoComplete="new-password"
+                  />
+                  <Input
+                    name="confirmPassword"
+                    type="password"
+                    label="Confirmer le nouveau mot de passe"
+                    required
+                    fullWidth
+                    autoComplete="new-password"
+                  />
+                  <SubmitButton>Changer le mot de passe</SubmitButton>
+                </form>
+              </div>
             </div>
 
             {/* Devices */}

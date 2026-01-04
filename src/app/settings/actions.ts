@@ -23,6 +23,48 @@ export async function updateUnitForms(
   return { success: true };
 }
 
+// Créer une nouvelle unité
+export async function createUnit(
+  code: string,
+  type: string,
+  ratioToBase: number,
+  singularForm: string,
+  pluralForm: string,
+  gender: string
+) {
+  try {
+    await prisma.unit.create({
+      data: {
+        code,
+        type,
+        ratioToBase,
+        singularForm,
+        pluralForm,
+        gender,
+      },
+    });
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Cette unité existe déjà" };
+  }
+}
+
+// Supprimer une unité
+export async function deleteUnit(code: string) {
+  try {
+    await prisma.unit.delete({
+      where: { code },
+    });
+
+    revalidatePath("/settings");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Impossible de supprimer cette unité (utilisée dans des recettes)" };
+  }
+}
+
 // Changer le mot de passe
 export async function changePasswordAction(
   prevState: any,
@@ -57,6 +99,62 @@ export async function changePasswordAction(
   }
 
   return { success: true, message: "Mot de passe modifié avec succès" };
+}
+
+// Changer le nom d'utilisateur
+export async function changeUsernameAction(
+  prevState: any,
+  formData: FormData
+) {
+  const session = await getCurrentSession();
+
+  if (!session) {
+    return { success: false, error: "Non authentifié" };
+  }
+
+  const newUsername = formData.get("newUsername") as string;
+  const password = formData.get("password") as string;
+
+  if (!newUsername || !password) {
+    return { success: false, error: "Tous les champs sont requis" };
+  }
+
+  if (newUsername.length < 3) {
+    return { success: false, error: "Le nom d'utilisateur doit faire au moins 3 caractères" };
+  }
+
+  // Vérifier le mot de passe actuel
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+  });
+
+  if (!user) {
+    return { success: false, error: "Utilisateur non trouvé" };
+  }
+
+  const bcrypt = await import("bcryptjs");
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+
+  if (!isValid) {
+    return { success: false, error: "Mot de passe incorrect" };
+  }
+
+  // Vérifier que le nouveau username n'est pas déjà pris
+  const existingUser = await prisma.user.findUnique({
+    where: { username: newUsername },
+  });
+
+  if (existingUser && existingUser.id !== session.userId) {
+    return { success: false, error: "Ce nom d'utilisateur est déjà pris" };
+  }
+
+  // Mettre à jour le username
+  await prisma.user.update({
+    where: { id: session.userId },
+    data: { username: newUsername },
+  });
+
+  return { success: true, message: "Nom d'utilisateur modifié avec succès" };
 }
 
 // Révoquer un appareil
