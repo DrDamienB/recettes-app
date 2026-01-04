@@ -1,6 +1,6 @@
 "use client";
 
-import { markItemAsPurchased, deleteCompletedItemsForStore } from "../planning/actions";
+import { deleteCompletedItemsForStore } from "../planning/actions";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
@@ -103,14 +103,24 @@ export default function ShoppingListClient({
       setLocalPurchasedStates(prev => ({ ...prev, [itemId]: newState }));
     }
 
-    // Envoyer la requête (le Service Worker gérera le mode hors ligne automatiquement)
+    // Envoyer la requête via API (le Service Worker gérera le mode hors ligne automatiquement)
     try {
       for (const itemId of item.relatedItemIds) {
-        await markItemAsPurchased(itemId, newState);
+        const response = await fetch(`/api/shopping-list/${itemId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ purchased: newState }),
+        });
+
+        if (!response.ok && response.status !== 200) {
+          throw new Error('Request failed');
+        }
       }
     } catch (error) {
       // Si erreur, le Service Worker a déjà mis l'action en queue
-      console.log("[Shopping] Requête interceptée par le Service Worker");
+      console.log("[Shopping] Requête interceptée par le Service Worker ou mode hors ligne");
     }
   };
 
