@@ -62,7 +62,7 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
     return (
       <main className="space-y-6 max-w-3xl mx-auto">
         <div className="text-center py-12">
-          <p className="text-gray-600">Chargement...</p>
+          <p className="text-gray-600 dark:text-[#8b949e]">Chargement...</p>
         </div>
       </main>
     );
@@ -82,7 +82,7 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
   return (
     <main className="space-y-6 max-w-3xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Modifier la recette</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-[#e6edf3]">Modifier la recette</h1>
         <a href={`/recipes/${recipeId}`}>
           <Button variant="secondary" size="md">
             Annuler
@@ -91,7 +91,7 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
       </div>
 
       {state?.error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
           <p className="font-medium">Erreur :</p>
           <p>{state.error}</p>
         </div>
@@ -104,17 +104,17 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
           placeholder="Ex: Pâtes carbonara"
           required
           fullWidth
-          className="h-12"
+          className="h-11"
           defaultValue={recipe.title}
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3]">
             Description
           </label>
           <textarea
             name="description"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[96px]"
+            className="w-full px-3 py-2 bg-white dark:bg-[#0f1419] border border-gray-300 dark:border-[#30363d] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] min-h-[96px]"
             rows={2}
             placeholder="Décrivez votre recette..."
             defaultValue={recipe.description || ""}
@@ -128,7 +128,7 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
             label="Préparation (min)"
             placeholder="15"
             hint="Temps de préparation"
-            className="h-12"
+            className="h-11"
             defaultValue={recipe.prepMin || ""}
           />
           <Input
@@ -137,7 +137,7 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
             label="Cuisson (min)"
             placeholder="10"
             hint="Temps de cuisson"
-            className="h-12"
+            className="h-11"
             defaultValue={recipe.cookMin || ""}
           />
           <Input
@@ -147,7 +147,7 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
             defaultValue={recipe.servingsDefault || "2"}
             required
             hint="Nombre de personnes"
-            className="h-12"
+            className="h-11"
           />
         </div>
 
@@ -157,24 +157,24 @@ export default function RecipeEditPage({ params }: RecipeEditPageProps) {
           placeholder="pates, rapide, italien"
           hint="Séparés par des virgules"
           fullWidth
-          className="h-12"
+          className="h-11"
           defaultValue={defaultTags}
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3]">
             Ingrédients (par personne)
           </label>
           <IngredientRows defaultIngredients={defaultIngredients} />
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3]">
             Étapes de préparation
           </label>
           <textarea
             name="steps"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[144px]"
+            className="w-full px-3 py-2 bg-white dark:bg-[#0f1419] border border-gray-300 dark:border-[#30363d] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] min-h-[144px]"
             rows={5}
             placeholder={"1) Faire bouillir l'eau\n2) Cuire les pâtes 9 min\n3) Mélanger et servir"}
             defaultValue={defaultSteps}

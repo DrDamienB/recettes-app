@@ -25,7 +25,7 @@ export default function NewRecipePage() {
   return (
     <main className="space-y-6 max-w-3xl mx-auto">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Nouvelle recette</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-[#e6edf3]">Nouvelle recette</h1>
         <a href="/recipes/import">
           <Button variant="secondary" size="md" className="border-2 flex items-center gap-2">
             <span>🔗</span>
@@ -35,7 +35,7 @@ export default function NewRecipePage() {
       </div>
 
       {state?.error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
           <p className="font-medium">Erreur :</p>
           <p>{state.error}</p>
         </div>
@@ -52,12 +52,12 @@ export default function NewRecipePage() {
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3]">
             Description
           </label>
           <textarea
             name="description"
-            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[96px]"
+            className="w-full px-3 py-2 bg-white dark:bg-[#0f1419] border border-gray-300 dark:border-[#30363d] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] min-h-[96px]"
             rows={2}
             placeholder="Décrivez votre recette..."
           />
@@ -101,19 +101,19 @@ export default function NewRecipePage() {
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3]">
             Ingrédients (par personne)
           </label>
           <IngredientRows />
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-[#e6edf3]">
             Étapes de préparation
           </label>
           <textarea
             name="steps"
-            className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[144px]"
+            className="w-full px-3 py-2 bg-white dark:bg-[#0f1419] border border-gray-300 dark:border-[#30363d] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-[#e6edf3] placeholder-gray-400 dark:placeholder-[#8b949e] min-h-[144px]"
             rows={5}
             placeholder={"1) Faire bouillir l'eau\n2) Cuire les pâtes 9 min\n3) Mélanger et servir"}
           />

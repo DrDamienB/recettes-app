@@ -26,6 +26,13 @@ function formatQuantity(qty: number): string {
   return Number.isInteger(qty) ? qty.toString() : qty.toFixed(1);
 }
 
+function formatUnit(unit: string, quantity: number): string {
+  if (unit === "piece") {
+    return quantity > 1 ? "pièces" : "pièce";
+  }
+  return unit;
+}
+
 export default function RecipeDetail({
   defaultServings,
   prepMin,
@@ -170,7 +177,7 @@ export default function RecipeDetail({
                 </span>
                 {" : "}
                 <span className="text-gray-700 dark:text-[#8b949e]">
-                  {formatQuantity(ing.quantity)} {ing.unit}
+                  {formatQuantity(ing.quantity)} {formatUnit(ing.unit, ing.quantity)}
                 </span>
               </li>
             ))}
