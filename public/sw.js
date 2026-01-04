@@ -58,8 +58,19 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorer les requêtes non-GET et les requêtes externes
-  if (request.method !== 'GET' || !url.origin.includes(self.location.origin)) {
+  // Ignorer les requêtes externes
+  if (!url.origin.includes(self.location.origin)) {
+    return;
+  }
+
+  // Gérer les requêtes POST/PATCH vers l'API shopping-list en mode hors ligne
+  if ((request.method === 'POST' || request.method === 'PATCH') && url.pathname.startsWith('/api/shopping-list')) {
+    event.respondWith(handleOfflineAction(request));
+    return;
+  }
+
+  // Ignorer les autres requêtes non-GET
+  if (request.method !== 'GET') {
     return;
   }
 
@@ -134,3 +145,128 @@ async function fetchAndCache(request, cache) {
     // Ignorer les erreurs de mise à jour en arrière-plan
   }
 }
+
+// Gestion des actions hors ligne (POST/PATCH)
+async function handleOfflineAction(request) {
+  try {
+    // Essayer d'abord d'envoyer la requête
+    const response = await fetch(request.clone());
+    return response;
+  } catch (error) {
+    // Si hors ligne, stocker l'action dans IndexedDB
+    console.log('[SW] Hors ligne, stockage de l\'action');
+
+    const body = await request.clone().json();
+    const action = {
+      url: request.url,
+      method: request.method,
+      body: body,
+      timestamp: Date.now(),
+    };
+
+    await addToOfflineQueue(action);
+
+    // Retourner une réponse simulée de succès
+    return new Response(
+      JSON.stringify({ success: true, offline: true }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}
+
+// Ajouter une action à la queue hors ligne
+async function addToOfflineQueue(action) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['offline-queue'], 'readwrite');
+    const store = transaction.objectStore('offline-queue');
+    const request = store.add(action);
+
+    request.onsuccess = () => {
+      console.log('[SW] Action ajoutée à la queue');
+      resolve();
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// Ouvrir ou créer la base de données IndexedDB
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('recettes-offline-db', 1);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('offline-queue')) {
+        db.createObjectStore('offline-queue', {
+          keyPath: 'timestamp',
+          autoIncrement: true,
+        });
+      }
+    };
+  });
+}
+
+// Synchroniser la queue quand la connexion revient
+async function syncOfflineQueue() {
+  console.log('[SW] Synchronisation de la queue hors ligne');
+  const db = await openDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['offline-queue'], 'readonly');
+    const store = transaction.objectStore('offline-queue');
+    const request = store.getAll();
+
+    request.onsuccess = async () => {
+      const actions = request.result;
+      console.log('[SW] Actions à synchroniser:', actions.length);
+
+      for (const action of actions) {
+        try {
+          await fetch(action.url, {
+            method: action.method,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(action.body),
+          });
+
+          // Supprimer l'action de la queue
+          const deleteTransaction = db.transaction(['offline-queue'], 'readwrite');
+          const deleteStore = deleteTransaction.objectStore('offline-queue');
+          deleteStore.delete(action.timestamp);
+
+          console.log('[SW] Action synchronisée:', action.url);
+        } catch (error) {
+          console.error('[SW] Erreur lors de la sync:', error);
+        }
+      }
+
+      resolve();
+    };
+
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// Écouter les événements de synchronisation
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Sync event:', event.tag);
+  if (event.tag === 'sync-offline-queue') {
+    event.waitUntil(syncOfflineQueue());
+  }
+});
+
+// Écouter les messages depuis le client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SYNC_QUEUE') {
+    console.log('[SW] Message reçu: synchronisation manuelle');
+    syncOfflineQueue();
+  }
+});

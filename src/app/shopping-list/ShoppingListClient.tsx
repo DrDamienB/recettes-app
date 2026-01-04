@@ -90,51 +90,33 @@ export default function ShoppingListClient({
   }>({ isOpen: false, storeName: "", itemCount: 0 });
 
   // Hook pour gérer le mode hors ligne
-  const { isOnline, addPendingAction, getLocalState, syncPendingActions, hasPendingActions } =
-    useOfflineSync(shoppingList.id);
+  const { isOnline, hasPendingSync } = useOfflineSync();
 
-  // Synchroniser automatiquement quand la connexion revient
-  useEffect(() => {
-    if (isOnline && hasPendingActions) {
-      console.log("[Shopping] Connexion rétablie, synchronisation...");
-      syncPendingActions(async (itemId, purchased) => {
-        await markItemAsPurchased(itemId, purchased);
-      });
-    }
-  }, [isOnline, hasPendingActions, syncPendingActions]);
+  // État local optimiste pour l'UI
+  const [localPurchasedStates, setLocalPurchasedStates] = useState<Record<number, boolean>>({});
 
   const handleTogglePurchased = async (item: ShoppingItem) => {
     const newState = !item.purchased;
 
-    // Mode hors ligne : sauvegarder localement
-    if (!isOnline) {
-      console.log("[Shopping] Mode hors ligne, sauvegarde locale");
-      for (const itemId of item.relatedItemIds) {
-        addPendingAction(itemId, newState);
-      }
-      // Recharger la page pour afficher l'état local
-      router.refresh();
-      return;
+    // Optimistic UI : mettre à jour l'affichage immédiatement
+    for (const itemId of item.relatedItemIds) {
+      setLocalPurchasedStates(prev => ({ ...prev, [itemId]: newState }));
     }
 
-    // Mode en ligne : update serveur directement
+    // Envoyer la requête (le Service Worker gérera le mode hors ligne automatiquement)
     try {
       for (const itemId of item.relatedItemIds) {
         await markItemAsPurchased(itemId, newState);
       }
     } catch (error) {
-      console.error("[Shopping] Erreur serveur, sauvegarde locale", error);
-      // En cas d'erreur réseau, sauvegarder localement
-      for (const itemId of item.relatedItemIds) {
-        addPendingAction(itemId, newState);
-      }
+      // Si erreur, le Service Worker a déjà mis l'action en queue
+      console.log("[Shopping] Requête interceptée par le Service Worker");
     }
   };
 
-  // Obtenir l'état effectif d'un item (serveur ou local)
+  // Obtenir l'état effectif d'un item (état optimiste ou serveur)
   const getItemPurchasedState = (item: ShoppingItem): boolean => {
-    // Utiliser l'état local si disponible, sinon l'état serveur
-    return getLocalState(item.id, item.purchased);
+    return localPurchasedStates[item.id] ?? item.purchased;
   };
 
   const toggleExpandStore = (storeName: string) => {
@@ -180,7 +162,7 @@ export default function ShoppingListClient({
         </div>
 
         {/* Indicateur de statut réseau */}
-        {(!isOnline || hasPendingActions) && (
+        {(!isOnline || hasPendingSync) && (
           <div className={`mb-4 px-4 py-3 rounded-lg flex items-center gap-3 ${
             !isOnline
               ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
