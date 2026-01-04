@@ -1,16 +1,47 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { getDynamicShoppingList } from "./actions";
 import DynamicShoppingListClient from "./DynamicShoppingListClient";
 
-// Force dynamic rendering (évite le prerender au build time)
-export const dynamic = 'force-dynamic';
+export default function ShoppingListPage() {
+  const [initialData, setInitialData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function ShoppingListPage() {
-  // Calculer la liste de courses pour les 7 prochains jours
-  const today = new Date();
-  const endDate = new Date(today);
-  endDate.setDate(endDate.getDate() + 7);
+  useEffect(() => {
+    async function loadData() {
+      const today = new Date();
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + 7);
 
-  const shoppingData = await getDynamicShoppingList(today, endDate);
+      const data = await getDynamicShoppingList(today, endDate);
+      setInitialData(data);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
-  return <DynamicShoppingListClient initialData={shoppingData} />;
+  if (loading) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-4xl mb-3 animate-pulse">🛒</div>
+          <p className="text-gray-600 dark:text-[#8b949e]">Chargement...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!initialData) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-4xl mb-3">❌</div>
+          <p className="text-gray-600 dark:text-[#8b949e]">Erreur de chargement</p>
+        </div>
+      </main>
+    );
+  }
+
+  return <DynamicShoppingListClient initialData={initialData} />;
 }
