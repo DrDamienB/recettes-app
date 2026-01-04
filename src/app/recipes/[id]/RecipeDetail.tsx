@@ -76,7 +76,7 @@ export default function RecipeDetail({
             <h2 className="text-xl font-bold text-gray-900 dark:text-[#e6edf3] mb-4 hidden sm:block">⏱️ Temps de préparation</h2>
 
             {/* Version mobile : ligne compacte */}
-            <div className="sm:hidden flex items-center gap-4 text-sm">
+            <div className="sm:hidden flex items-center justify-center gap-4 text-sm">
             {prepMin && (
               <span className="flex items-center gap-1">
                 <span>⏱️</span>
