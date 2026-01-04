@@ -13,9 +13,11 @@ import {
   exportRecipesCSV,
   importRecipesCSV,
   logoutAction,
+  createStore,
+  deleteStore,
 } from "./actions";
 
-type Tab = "units" | "import" | "export" | "account";
+type Tab = "units" | "stores" | "import" | "export" | "account";
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -29,6 +31,7 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("units");
   const [units, setUnits] = useState<any[]>([]);
+  const [stores, setStores] = useState<any[]>([]);
   const [devices, setDevices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [importStatus, setImportStatus] = useState<{
@@ -38,6 +41,7 @@ export default function SettingsPage() {
     message?: string;
   } | null>(null);
   const [showAddUnitModal, setShowAddUnitModal] = useState(false);
+  const [showAddStoreModal, setShowAddStoreModal] = useState(false);
   const [passwordState, passwordAction] = useActionState(
     changePasswordAction,
     null
@@ -53,6 +57,7 @@ export default function SettingsPage() {
       const res = await fetch("/api/settings");
       const data = await res.json();
       setUnits(data.units || []);
+      setStores(data.stores || []);
       setDevices(data.devices || []);
       setLoading(false);
     }
@@ -166,8 +171,44 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCreateStore = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+
+    const result = await createStore(name);
+
+    if (result.success) {
+      setShowAddStoreModal(false);
+      const res = await fetch("/api/settings");
+      const data = await res.json();
+      setStores(data.stores || []);
+      (e.target as HTMLFormElement).reset();
+    } else {
+      alert(result.error || "Erreur lors de la création du magasin");
+    }
+  };
+
+  const handleDeleteStore = async (id: number) => {
+    if (
+      confirm(
+        "Êtes-vous sûr de vouloir supprimer ce magasin ? Cette action est irréversible."
+      )
+    ) {
+      const result = await deleteStore(id);
+      if (result.success) {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        setStores(data.stores || []);
+      } else {
+        alert(result.error || "Erreur lors de la suppression");
+      }
+    }
+  };
+
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "units", label: "Unités", icon: "📏" },
+    { id: "stores", label: "Magasins", icon: "🏪" },
     { id: "import", label: "Import", icon: "📥" },
     { id: "export", label: "Export", icon: "📤" },
     { id: "account", label: "Compte", icon: "👤" },
@@ -374,6 +415,95 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "stores" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-2">
+                  Gestion des magasins
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-[#8b949e]">
+                  Personnalisez la liste des magasins disponibles pour vos ingrédients.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowAddStoreModal(true)}
+                variant="primary"
+                size="md"
+              >
+                Ajouter un magasin
+              </Button>
+            </div>
+
+            {/* Modal Ajouter un magasin */}
+            {showAddStoreModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg p-6 max-w-md w-full mx-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-[#e6edf3] mb-4">
+                    Ajouter un nouveau magasin
+                  </h3>
+                  <form onSubmit={handleCreateStore} className="space-y-4">
+                    <Input
+                      name="name"
+                      label="Nom du magasin"
+                      placeholder="Ex: Monoprix"
+                      required
+                      fullWidth
+                    />
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        onClick={() => setShowAddStoreModal(false)}
+                        variant="secondary"
+                        size="md"
+                      >
+                        Annuler
+                      </Button>
+                      <Button type="submit" variant="primary" size="md">
+                        Créer le magasin
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {loading ? (
+              <p className="text-gray-600 dark:text-[#8b949e]">
+                Chargement...
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {stores.map((store) => (
+                  <div
+                    key={store.id}
+                    className="bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg p-4 flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🏪</span>
+                      <span className="font-medium text-gray-900 dark:text-[#e6edf3]">
+                        {store.name}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() => handleDeleteStore(store.id)}
+                      variant="danger"
+                      size="sm"
+                    >
+                      Supprimer
+                    </Button>
+                  </div>
+                ))}
+                {stores.length === 0 && (
+                  <p className="text-center text-gray-500 dark:text-[#8b949e] py-8">
+                    Aucun magasin configuré. Ajoutez-en un pour commencer !
+                  </p>
+                )}
               </div>
             )}
           </div>

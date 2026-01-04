@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import { Button } from "@/components/ui";
-import { STORE_SECTIONS, DEFAULT_STORES } from "@/lib/constants";
+import { STORE_SECTIONS } from "@/lib/constants";
 
 type Row = {
   name: string;
@@ -23,20 +23,43 @@ type IngredientRowsProps = {
 };
 
 export default function IngredientRows({ defaultIngredients }: IngredientRowsProps = {}) {
+  const [stores, setStores] = useState<string[]>(["Placard", "Auchan"]); // Fallback par défaut
+  const [loading, setLoading] = useState(true);
+
+  // Charger les magasins depuis l'API
+  useEffect(() => {
+    async function loadStores() {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        if (data.stores && data.stores.length > 0) {
+          setStores(data.stores.map((s: any) => s.name));
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des magasins:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStores();
+  }, []);
+
+  const defaultStoreName = stores[0] || "Placard";
+
   const initialRows: Row[] = defaultIngredients && defaultIngredients.length > 0
     ? defaultIngredients.map(ing => ({
         name: ing.name,
         qtyPerPerson: String(ing.qtyPerPerson),
         unitCode: ing.unitCode as Row["unitCode"],
         storeSection: ing.storeSection || "épicerie salée",
-        storeName: ing.storeName || "Auchan",
+        storeName: ing.storeName || defaultStoreName,
       }))
-    : [{ name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Auchan" }];
+    : [{ name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: defaultStoreName }];
 
   const [rows, setRows] = useState<Row[]>(initialRows);
 
   function addRow() {
-    setRows(r => [...r, { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: "Auchan" }]);
+    setRows(r => [...r, { name: "", qtyPerPerson: "", unitCode: "g", storeSection: "épicerie salée", storeName: defaultStoreName }]);
   }
   function removeRow(i: number) {
     setRows(r => r.filter((_, idx) => idx !== i));
@@ -139,7 +162,7 @@ export default function IngredientRows({ defaultIngredients }: IngredientRowsPro
                   value={r.storeName}
                   onChange={e => updateRow(i, "storeName", e.target.value)}
                 >
-                  {DEFAULT_STORES.map(store => (
+                  {stores.map(store => (
                     <option key={store} value={store}>{store}</option>
                   ))}
                 </select>
