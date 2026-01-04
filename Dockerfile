@@ -53,8 +53,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Install only Prisma CLI (minimal)
-RUN npm install -g prisma@6.18.0 && \
+# Install Prisma CLI, ts-node and dependencies for seed
+RUN npm install -g prisma@6.18.0 ts-node@10.9.2 typescript@5 bcryptjs@3.0.3 @types/node@20 && \
     npm cache clean --force
 
 # Create data directory and set permissions
