@@ -12,6 +12,7 @@ export default function Header() {
     { href: "/recipes", label: "Recettes", icon: "📖" },
     { href: "/planning", label: "Planning", icon: "📅" },
     { href: "/shopping-list", label: "Liste de courses", icon: "🛒" },
+    { href: "/settings", label: "Paramètres", icon: "⚙️" },
   ];
 
   const isActive = (href: string) => {
