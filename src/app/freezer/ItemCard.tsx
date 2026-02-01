@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { FreezerItem } from "./types";
 import { getTypeInfo, getExpirationStatus } from "./types";
 
@@ -18,12 +18,25 @@ export default function ItemCard({
   compact?: boolean;
 }) {
   const [showActions, setShowActions] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
   const typeInfo = getTypeInfo(item.type);
   const expStatus = getExpirationStatus(item.expirationDate);
   const expDate = new Date(item.expirationDate).toLocaleDateString("fr-FR", {
     day: "numeric",
     month: "short",
   });
+
+  const toggleActions = () => {
+    if (!showActions && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: rect.bottom + 4,
+        left: Math.min(rect.right - 144, window.innerWidth - 152), // 144 = w-36
+      });
+    }
+    setShowActions(!showActions);
+  };
 
   return (
     <div
@@ -74,36 +87,38 @@ export default function ItemCard({
         </div>
 
         {/* Actions */}
-        <div className="relative">
-          <button
-            onClick={() => setShowActions(!showActions)}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#1c2128] text-gray-400 dark:text-[#484f59] transition-colors"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
+        <button
+          ref={btnRef}
+          onClick={toggleActions}
+          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#1c2128] text-gray-400 dark:text-[#484f59] transition-colors"
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+          </svg>
+        </button>
 
-          {showActions && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowActions(false)} />
-              <div className="absolute right-0 top-6 z-50 w-36 bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg shadow-lg overflow-hidden">
-                <button
-                  onClick={() => { setShowActions(false); onMove(); }}
-                  className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-[#e6edf3] hover:bg-gray-100 dark:hover:bg-[#30363d] flex items-center gap-2"
-                >
-                  <span>📦</span> Déplacer
-                </button>
-                <button
-                  onClick={() => { setShowActions(false); onDelete(); }}
-                  className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-                >
-                  <span>🗑️</span> Supprimer
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        {showActions && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setShowActions(false)} />
+            <div
+              className="fixed z-50 w-36 bg-white dark:bg-[#1c2128] border border-gray-200 dark:border-[#30363d] rounded-lg shadow-lg overflow-hidden"
+              style={{ top: menuPos.top, left: menuPos.left }}
+            >
+              <button
+                onClick={() => { setShowActions(false); onMove(); }}
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-[#e6edf3] hover:bg-gray-100 dark:hover:bg-[#30363d] flex items-center gap-2"
+              >
+                <span>📦</span> Déplacer
+              </button>
+              <button
+                onClick={() => { setShowActions(false); onDelete(); }}
+                className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+              >
+                <span>🗑️</span> Supprimer
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
