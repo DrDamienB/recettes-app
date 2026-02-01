@@ -1,0 +1,29 @@
+-- CreateTable
+CREATE TABLE "Freezer" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "Drawer" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "freezerId" INTEGER NOT NULL,
+    CONSTRAINT "Drawer_freezerId_fkey" FOREIGN KEY ("freezerId") REFERENCES "Freezer" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "FreezerItem" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "title" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL DEFAULT 1,
+    "expirationDate" DATETIME NOT NULL,
+    "drawerId" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "FreezerItem_drawerId_fkey" FOREIGN KEY ("drawerId") REFERENCES "Drawer" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);

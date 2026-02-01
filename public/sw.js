@@ -9,6 +9,7 @@ const urlsToCache = [
   '/recipes',
   '/planning',
   '/shopping-list',
+  '/freezer',
   '/offline',
 ];
 
@@ -269,4 +270,79 @@ self.addEventListener('message', (event) => {
     console.log('[SW] Message reçu: synchronisation manuelle');
     syncOfflineQueue();
   }
+  if (event.data && event.data.type === 'CHECK_EXPIRING') {
+    checkExpiringItems();
+  }
+});
+
+// Vérifier les items du congélateur qui périment bientôt
+async function checkExpiringItems() {
+  try {
+    const response = await fetch('/api/freezer-items/expiring');
+    if (!response.ok) return;
+    const data = await response.json();
+
+    if (data.totalUrgent > 0) {
+      const lastNotif = await getLastNotificationDate();
+      const today = new Date().toISOString().split('T')[0];
+
+      // Max 1 notification par jour
+      if (lastNotif === today) return;
+
+      const expiredCount = data.expired.length;
+      const expiringCount = data.expiring.length;
+
+      let body = '';
+      if (expiredCount > 0) body += `${expiredCount} produit(s) expiré(s). `;
+      if (expiringCount > 0) body += `${expiringCount} produit(s) expirent dans les 15 jours.`;
+
+      self.registration.showNotification('Congélateur', {
+        body: body.trim(),
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-72x72.png',
+        tag: 'freezer-expiring',
+        data: { url: '/freezer' },
+      });
+
+      await setLastNotificationDate(today);
+    }
+  } catch (error) {
+    console.error('[SW] Erreur vérification péremption:', error);
+  }
+}
+
+async function getLastNotificationDate() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(['offline-queue'], 'readonly');
+      const store = tx.objectStore('offline-queue');
+      const req = store.get('last-freezer-notif');
+      req.onsuccess = () => resolve(req.result?.date || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function setLastNotificationDate(date) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(['offline-queue'], 'readwrite');
+    const store = tx.objectStore('offline-queue');
+    store.put({ timestamp: 'last-freezer-notif', date });
+  } catch { /* ignore */ }
+}
+
+// Ouvrir la page au clic sur notification
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then((clients) => {
+      for (const client of clients) {
+        if (client.url.includes(url) && 'focus' in client) return client.focus();
+      }
+      return self.clients.openWindow(url);
+    })
+  );
 });

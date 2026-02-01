@@ -11,7 +11,8 @@ export default function Header() {
   const navLinks: Array<{ href: string; label: string; icon: string; highlight?: boolean }> = [
     { href: "/recipes", label: "Recettes", icon: "📖" },
     { href: "/planning", label: "Planning", icon: "📅" },
-    { href: "/shopping-list", label: "Liste de courses", icon: "🛒" },
+    { href: "/shopping-list", label: "Courses", icon: "🛒" },
+    { href: "/freezer", label: "Congélateur", icon: "🧊" },
     { href: "/settings", label: "Paramètres", icon: "⚙️" },
   ];
 

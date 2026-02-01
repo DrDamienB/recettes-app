@@ -178,3 +178,34 @@ model ShoppingListItem {
   @@index([shoppingListId])
   @@index([mealPlanId])
 }
+
+// ───────────── Congélateur ─────────────
+
+model Freezer {
+  id        Int      @id @default(autoincrement())
+  name      String // ex: "Congélateur cuisine", "Congélateur garage"
+  order     Int      @default(0)
+  drawers   Drawer[]
+  createdAt DateTime @default(now())
+}
+
+model Drawer {
+  id        Int           @id @default(autoincrement())
+  name      String // ex: "Tiroir 1", "Tiroir haut"
+  order     Int           @default(0)
+  freezerId Int
+  freezer   Freezer       @relation(fields: [freezerId], references: [id], onDelete: Cascade)
+  items     FreezerItem[]
+}
+
+model FreezerItem {
+  id             Int      @id @default(autoincrement())
+  title          String
+  type           String // "entree" | "plat" | "dessert" | "aliment_brut" | "plat_prepare"
+  quantity       Int      @default(1)
+  expirationDate DateTime
+  drawerId       Int
+  drawer         Drawer   @relation(fields: [drawerId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
