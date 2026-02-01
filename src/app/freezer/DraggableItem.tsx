@@ -10,19 +10,14 @@ export default function DraggableItem({
   item: FreezerItem;
   children: React.ReactNode;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: item.id,
   });
-
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={isDragging ? "opacity-30" : ""}
+      className={isDragging ? "opacity-30 pointer-events-none" : ""}
       {...listeners}
       {...attributes}
     >

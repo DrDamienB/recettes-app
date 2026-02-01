@@ -315,7 +315,7 @@ export default function FreezerClient({ initialData }: { initialData: Freezer[] 
         onDragEnd={handleDragEnd}
       >
         {/* Desktop: Kanban horizontal */}
-        <div className="hidden md:flex gap-4 overflow-x-auto pb-4">
+        <div className="hidden md:flex gap-4 overflow-x-auto overflow-y-hidden pb-4">
           {filteredFreezers.map((freezer) => (
             <div
               key={freezer.id}
